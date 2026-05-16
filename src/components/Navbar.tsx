@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Navbar() {
-  const { user, login, isAdmin } = useAuth();
+  const { user, login, isAdmin, customer } = useAuth();
   const { cartCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,18 +30,23 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-brand-offwhite/90 backdrop-blur-md border-b border-brand-black/5">
-        <nav className="mx-auto px-4 lg:px-12 h-20 flex items-center justify-between">
-          {/* Mobile Menu Toggle */}
-          <button 
-            className="lg:hidden p-2 -ml-2" 
-            onClick={() => setIsMenuOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="w-5 h-5 text-brand-black" />
-          </button>
+        <nav className="mx-auto px-4 lg:px-12 h-20 flex items-center justify-between relative">
+          {/* Mobile Menu Toggle & Logo Container */}
+          <div className="flex items-center lg:hidden">
+            <button 
+              className="p-2 -ml-2 mr-4" 
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5 text-brand-black" />
+            </button>
+            <Link to="/" className="text-2xl font-display font-medium tracking-tight uppercase">
+              Dressify
+            </Link>
+          </div>
 
-          {/* Logo */}
-          <Link to="/" className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
+          {/* Desktop Logo */}
+          <Link to="/" className="hidden lg:block">
             <span className="text-3xl font-display font-medium tracking-[-0.05em] uppercase">
               Dressify
             </span>
@@ -75,24 +80,26 @@ export default function Navbar() {
               )}
             </Link>
 
-            <div className="flex items-center">
+            <div className="flex items-center border-l border-brand-black/5 ml-2 pl-4">
               {user ? (
                 <button 
                   onClick={() => navigate('/profile')} 
-                  className="p-2 transition-colors group"
+                  className="flex items-center space-x-3 group"
                 >
                   {user.photoURL ? (
-                    <img src={user.photoURL} alt={user.displayName || ''} className="w-5 h-5 rounded-full border border-brand-black/10 group-hover:border-brand-gold transition-colors" />
+                    <img src={user.photoURL} alt={user.displayName || ''} className="w-6 h-6 rounded-full border border-brand-black/10 group-hover:border-brand-gold transition-colors" />
                   ) : (
                     <User className="w-[18px] h-[18px] text-brand-black group-hover:scale-110 transition-transform" />
                   )}
+                  <span className="hidden md:block text-[9px] font-black uppercase tracking-[0.2em]">{customer?.displayName?.split(' ')[0] || 'Partner'}</span>
                 </button>
               ) : (
                 <button 
                   onClick={login} 
-                  className="p-2 group"
+                  className="flex items-center space-x-3 group bg-brand-black text-white px-4 py-2 hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-sm"
                 >
-                  <User className="w-[18px] h-[18px] text-brand-black group-hover:scale-110 transition-transform" />
+                  <User className="w-[16px] h-[16px] group-hover:scale-110 transition-transform" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em]">Access Identity</span>
                 </button>
               )}
             </div>

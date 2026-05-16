@@ -74,7 +74,7 @@ export default function Home() {
                 </motion.span>
               </div>
               
-              <h1 className="text-8xl md:text-[14rem] font-display font-medium leading-[0.75] mb-12 tracking-[-0.05em] lg:indent-[-0.05em]">
+              <h1 className="fluid-display-xl font-display font-medium mb-12 tracking-[-0.05em] lg:indent-[-0.05em]">
                 POETRY <br />
                 <span className="ml-0 md:ml-48 lg:ml-72 italic font-serif lowercase tracking-tight text-brand-beige">of the self.</span>
               </h1>
@@ -131,12 +131,12 @@ export default function Home() {
           </div>
           <div className="lg:w-1/2 space-y-12">
             <span className="text-[10px] uppercase tracking-[0.5em] font-black text-brand-gold">Epilogue</span>
-            <h2 className="text-6xl md:text-9xl font-display leading-[0.8] tracking-tighter uppercase">Quiet <br /> Power</h2>
+            <h2 className="fluid-display-lg font-display uppercase">Quiet <br /> Power</h2>
             <div className="space-y-10 max-w-sm">
                <p className="text-lg text-brand-black/40 font-serif italic italic leading-relaxed">The Archive represents a collection of essential forms, distilled to their absolute necessity.</p>
-               <div className="flex items-center gap-10">
-                 <Link to="/category/women" className="luxury-button !px-16">The Women</Link>
-                 <Link to="/category/men" className="nav-link !text-[11px]">View Men</Link>
+               <div className="flex flex-wrap items-center gap-6 md:gap-10">
+                 <Link to="/category/women" className="luxury-button !px-12 md:!px-16 w-full md:w-auto text-center">The Women</Link>
+                 <Link to="/category/men" className="nav-link !text-[11px] w-full md:w-auto text-center">View Men</Link>
                </div>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function Home() {
                 >
                   Nuance
                 </motion.span>
-                <h3 className="text-6xl md:text-8xl text-white font-display uppercase tracking-tight mb-12">Feminine <br /> <span className="italic font-serif lowercase text-brand-beige">Structure</span></h3>
+                <h3 className="text-5xl md:text-8xl text-white font-display uppercase tracking-tight mb-12">Feminine <br /> <span className="italic font-serif lowercase text-brand-beige">Structure</span></h3>
                 <Link to="/category/women" className="luxury-button !bg-white !text-brand-black hover:!bg-brand-gold">Discover Women</Link>
               </div>
            </motion.div>
@@ -191,7 +191,7 @@ export default function Home() {
                 >
                   Distinction
                 </motion.span>
-                <h3 className="text-6xl md:text-8xl text-white font-display uppercase tracking-tight mb-12">Masculine <br /> <span className="italic font-serif lowercase text-brand-beige">Form</span></h3>
+                <h3 className="text-5xl md:text-8xl text-white font-display uppercase tracking-tight mb-12">Masculine <br /> <span className="italic font-serif lowercase text-brand-beige">Form</span></h3>
                 <Link to="/category/men" className="luxury-button !bg-white !text-brand-black hover:!bg-brand-gold">Discover Men</Link>
               </div>
            </motion.div>
@@ -206,7 +206,7 @@ export default function Home() {
               <span className="text-[10px] uppercase tracking-[0.5em] font-black text-brand-gold block">The Gallery</span>
               <div className="w-12 h-px bg-brand-gold/30" />
             </div>
-            <h2 className="text-7xl md:text-[10rem] font-display font-medium leading-[0.8] tracking-tighter uppercase">Artifacts</h2>
+            <h2 className="fluid-display-lg font-display font-medium tracking-tighter uppercase">Artifacts</h2>
           </div>
           <div className="text-right">
              <Link to="/search" className="nav-link !text-[12px] underline underline-offset-8">Explore All</Link>

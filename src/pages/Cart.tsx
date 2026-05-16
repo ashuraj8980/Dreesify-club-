@@ -92,16 +92,16 @@ export default function Cart() {
                       <div className="inline-flex items-center border border-brand-black/10 p-0.5 bg-white/50 backdrop-blur-sm">
                         <button 
                           onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity - 1)}
-                          className="p-3 hover:bg-brand-black hover:text-white transition-all duration-300"
+                          className="p-4 md:p-3 hover:bg-brand-black hover:text-white transition-all duration-300"
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-4 h-4 md:w-3 md:h-3" />
                         </button>
-                        <span className="w-12 text-center text-xs font-bold font-mono">{item.quantity}</span>
+                        <span className="w-12 text-center text-[13px] md:text-xs font-bold font-mono">{item.quantity}</span>
                         <button 
                           onClick={() => updateQuantity(item.id, item.selectedSize, item.quantity + 1)}
-                          className="p-3 hover:bg-brand-black hover:text-white transition-all duration-300"
+                          className="p-4 md:p-3 hover:bg-brand-black hover:text-white transition-all duration-300"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-4 h-4 md:w-3 md:h-3" />
                         </button>
                       </div>
                     </div>

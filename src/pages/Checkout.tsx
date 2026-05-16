@@ -204,7 +204,7 @@ export default function Checkout() {
                       value={String(shippingAddress[field.name as keyof Address] || '')}
                       onChange={handleInputChange}
                       placeholder={`Enter ${field.label.toLowerCase()}...`}
-                      className="w-full bg-transparent border-b border-brand-black/10 focus:border-brand-black py-4 text-sm font-medium outline-none transition-colors duration-500 placeholder:text-brand-black/10 placeholder:italic"
+                      className="w-full bg-white md:bg-transparent border border-brand-black/5 md:border-t-0 md:border-x-0 md:border-b md:border-brand-black/10 focus:border-brand-black p-4 md:px-0 md:py-4 text-sm font-medium outline-none transition-all duration-500 placeholder:text-brand-black/20 placeholder:italic"
                     />
                   </div>
                 ))}
@@ -216,7 +216,7 @@ export default function Checkout() {
                     onChange={handleInputChange}
                     rows={2}
                     placeholder="Provide full logistics coordinates..."
-                    className="w-full bg-transparent border-b border-brand-black/10 focus:border-brand-black py-4 text-sm font-medium outline-none transition-colors duration-500 resize-none placeholder:text-brand-black/10 placeholder:italic"
+                    className="w-full bg-white md:bg-transparent border border-brand-black/5 md:border-t-0 md:border-x-0 md:border-b md:border-brand-black/10 focus:border-brand-black p-4 md:px-0 md:py-4 text-sm font-medium outline-none transition-all duration-500 resize-none placeholder:text-brand-black/20 placeholder:italic"
                   />
                 </div>
                 <div className="space-y-4">
@@ -226,7 +226,7 @@ export default function Checkout() {
                     name="city"
                     value={shippingAddress.city}
                     onChange={handleInputChange}
-                    className="w-full bg-transparent border-b border-brand-black/10 focus:border-brand-black py-4 text-sm font-medium outline-none transition-colors duration-500"
+                    className="w-full bg-white md:bg-transparent border border-brand-black/5 md:border-t-0 md:border-x-0 md:border-b md:border-brand-black/10 focus:border-brand-black p-4 md:px-0 md:py-4 text-sm font-medium outline-none transition-all duration-500"
                   />
                 </div>
                 <div className="space-y-4">
@@ -236,7 +236,7 @@ export default function Checkout() {
                     name="state"
                     value={shippingAddress.state}
                     onChange={handleInputChange}
-                    className="w-full bg-transparent border-b border-brand-black/10 focus:border-brand-black py-4 text-sm font-medium outline-none transition-colors duration-500"
+                    className="w-full bg-white md:bg-transparent border border-brand-black/5 md:border-t-0 md:border-x-0 md:border-b md:border-brand-black/10 focus:border-brand-black p-4 md:px-0 md:py-4 text-sm font-medium outline-none transition-all duration-500"
                   />
                 </div>
               </div>

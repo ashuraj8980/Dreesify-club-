@@ -26,47 +26,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        const customerRef = doc(db, 'customers', user.uid);
-        const customerSnap = await getDoc(customerRef);
-        
-        if (customerSnap.exists()) {
-          const data = customerSnap.data() as Customer;
-          // Auto-upgrade to admin if email matches
-          if (user.email && ADMIN_EMAILS.includes(user.email) && data.role !== 'admin') {
-            const { updateDoc } = await import('firebase/firestore');
-            await updateDoc(customerRef, { role: 'admin' });
-            data.role = 'admin';
+      try {
+        setUser(user);
+        if (user) {
+          const customerRef = doc(db, 'customers', user.uid);
+          const customerSnap = await getDoc(customerRef);
+          
+          if (customerSnap.exists()) {
+            const data = customerSnap.data() as Customer;
+            // Auto-upgrade to admin if email matches
+            if (user.email && ADMIN_EMAILS.includes(user.email) && data.role !== 'admin') {
+              const { updateDoc } = await import('firebase/firestore');
+              await updateDoc(customerRef, { role: 'admin' });
+              data.role = 'admin';
+            }
+            setCustomer(data);
+          } else {
+            const newRole = (user.email && ADMIN_EMAILS.includes(user.email)) ? 'admin' : 'user';
+            const newCustomer: Customer = {
+              id: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || 'Anonymous Partner',
+              photoURL: user.photoURL || '',
+              role: newRole,
+              addresses: [],
+              wishlist: [],
+              createdAt: Date.now(),
+            };
+            await setDoc(customerRef, newCustomer);
+            setCustomer(newCustomer);
+            import('react-hot-toast').then(m => m.default.success('Foundation Identity Created'));
           }
-          setCustomer(data);
         } else {
-          const newRole = (user.email && ADMIN_EMAILS.includes(user.email)) ? 'admin' : 'user';
-          const newCustomer: Customer = {
-            id: user.uid,
-            email: user.email || '',
-            displayName: user.displayName || '',
-            photoURL: user.photoURL || '',
-            role: newRole,
-            addresses: [],
-            wishlist: [],
-            createdAt: Date.now(),
-          };
-          await setDoc(customerRef, newCustomer);
-          setCustomer(newCustomer);
+          setCustomer(null);
         }
-      } else {
-        setCustomer(null);
+      } catch (err) {
+        console.error('Auth synchronization error:', err);
+        import('react-hot-toast').then(m => m.default.error('Memory Sync Failed. Please refresh.'));
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return unsubscribe;
   }, []);
 
   const login = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      // Ensure specific popup behavior
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        import('react-hot-toast').then(m => m.default.success(`Welcome, ${result.user.displayName || 'Partner'}`));
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      if (err.code === 'auth/popup-blocked') {
+        import('react-hot-toast').then(m => m.default.error('Login Popup Blocked by Browser'));
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        // Ignore user cancellation
+      } else {
+        import('react-hot-toast').then(m => m.default.error(`Access Denied: ${err.message}`));
+      }
+    }
   };
 
   const logout = async () => {
