@@ -68,21 +68,21 @@ export default function Profile() {
               </div>
               
               <div className="space-y-2">
-                <h2 className="text-3xl font-display font-medium uppercase tracking-tight">{customer?.displayName || 'Archive Member'}</h2>
+                <h2 className="text-3xl font-display font-medium uppercase tracking-tight">{user.displayName || customer?.displayName || 'Member'}</h2>
                 <div className="flex items-center space-x-3">
                    <div className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse" />
-                   <p className="text-[10px] text-brand-black/40 font-black uppercase tracking-[0.3em]">{customer?.role || 'Guest'}</p>
+                   <p className="text-[10px] text-brand-black/40 font-black uppercase tracking-[0.3em]">{isAdmin ? 'ADMIN / OWNER' : (customer?.role || 'User')}</p>
                 </div>
               </div>
             </motion.div>
 
             <nav className="space-y-4">
               <button className="w-full text-left p-6 bg-white border border-brand-black/10 text-brand-black font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-between group">
-                <span className="group-hover:translate-x-1 transition-transform">Registry History</span>
+                <span className="group-hover:translate-x-1 transition-transform">My Orders</span>
                 <ChevronRight className="w-3 h-3 text-brand-black/20" />
               </button>
               <button className="w-full text-left p-6 hover:bg-white text-brand-black/40 hover:text-brand-black border border-transparent hover:border-brand-black/10 transition-all font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-between group">
-                <span className="group-hover:translate-x-1 transition-transform">Logistics Points</span>
+                <span className="group-hover:translate-x-1 transition-transform">Rewards Points</span>
                 <ChevronRight className="w-3 h-3 text-brand-black/20" />
               </button>
               
@@ -93,7 +93,7 @@ export default function Profile() {
                 >
                   <div className="flex items-center space-x-4">
                     <LayoutDashboard className="w-4 h-4" />
-                    <span>Management Portal</span>
+                    <span>Admin Dashboard</span>
                   </div>
                   <ArrowUpRight className="w-3 h-3" />
                 </Link>
@@ -103,7 +103,7 @@ export default function Profile() {
                 onClick={logout}
                 className="w-full text-left p-6 text-red-800/40 hover:text-red-800 font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-between pt-12"
               >
-                <span>Terminate Session</span>
+                <span>Logout</span>
                 <LogOut className="w-3 h-3" />
               </button>
             </nav>
@@ -112,8 +112,8 @@ export default function Profile() {
           {/* Content */}
           <div className="lg:w-2/3 xl:w-3/4">
             <header className="mb-16">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20 mb-4 italic">Procurement Records</p>
-              <h3 className="text-5xl font-display font-medium uppercase tracking-tight">Recent <br /> Transactions</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20 mb-4 italic">Account activity</p>
+              <h3 className="text-5xl font-display font-medium uppercase tracking-tight">Recent <br /> Orders</h3>
             </header>
             
             {loading ? (
@@ -133,19 +133,19 @@ export default function Profile() {
                       >
                         <div className="p-10 flex flex-wrap items-center justify-between gap-12 border-b border-brand-black/5">
                           <div className="space-y-2">
-                             <p className="text-[8px] font-black uppercase tracking-widest text-brand-black/20">Sequence ID</p>
+                             <p className="text-[8px] font-black uppercase tracking-widest text-brand-black/20">Order ID</p>
                              <p className="text-sm font-mono font-bold">#{order.id.slice(-12).toUpperCase()}</p>
                           </div>
                           <div className="space-y-2">
-                             <p className="text-[8px] font-black uppercase tracking-widest text-brand-black/20">Temporal Data</p>
+                             <p className="text-[8px] font-black uppercase tracking-widest text-brand-black/20">Order Date</p>
                              <p className="text-sm font-display uppercase tracking-tight">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                           </div>
                           <div className="space-y-2">
-                             <p className="text-[8px] font-black uppercase tracking-widest text-brand-black/20">Settlement</p>
+                             <p className="text-[8px] font-black uppercase tracking-widest text-brand-black/20">Total Paid</p>
                              <p className="text-sm font-black tracking-tight">{formatCurrency(order.total)}</p>
                           </div>
                           <div className="space-y-2">
-                             <p className="text-[8px] font-black uppercase tracking-widest text-brand-black/20">Registry Status</p>
+                             <p className="text-[8px] font-black uppercase tracking-widest text-brand-black/20">Status</p>
                              <div className="flex items-center space-x-3">
                                <div className={`w-1.5 h-1.5 rounded-full ${order.status === 'delivered' ? 'bg-green-500' : 'bg-brand-gold animate-pulse'}`} />
                                <span className="text-[10px] font-black uppercase tracking-widest">{order.status}</span>
@@ -155,7 +155,7 @@ export default function Profile() {
                             to={`/order-confirmation/${order.id}`} 
                             className="bg-brand-black text-white px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-brand-gold hover:text-brand-black transition-all duration-500"
                           >
-                            Details
+                            Track
                           </Link>
                         </div>
                         

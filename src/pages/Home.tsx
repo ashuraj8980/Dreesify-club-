@@ -202,11 +202,11 @@ export default function Home() {
       <section className="container mx-auto px-4 lg:px-12">
         <header className="flex flex-col items-center text-center space-y-8 mb-32 border-b border-brand-black/10 pb-20">
           <div className="space-y-4">
-            <span className="text-[10px] uppercase tracking-[0.6em] font-black text-brand-gold block">The Gallery</span>
-            <h2 className="fluid-display-lg font-display font-medium uppercase">Artifacts</h2>
+            <span className="text-[10px] uppercase tracking-[0.6em] font-black text-brand-gold block">New Season</span>
+            <h2 className="fluid-display-lg font-display font-medium uppercase">Trending Now</h2>
           </div>
-          <p className="text-brand-black/40 font-serif italic text-lg max-w-lg">Selected standards from the permanent collection, curated for distinction and longevity.</p>
-          <Link to="/search" className="nav-link !text-[12px] underline underline-offset-8">Explore Full Archive</Link>
+          <p className="text-brand-black/40 font-serif italic text-lg max-w-lg">Selected pieces from our latest collection, curated for quality and timeless style.</p>
+          <Link to="/search" className="nav-link !text-[12px] underline underline-offset-8">Browse All Products</Link>
         </header>
         
         {loading ? (
@@ -277,10 +277,10 @@ export default function Home() {
       <section className="container mx-auto px-4 lg:px-12 py-20 md:py-40 border-t border-brand-black/5">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center">
            <div className="text-center lg:text-left">
-              <span className="text-brand-gold text-[10px] font-black uppercase tracking-[0.6em] mb-6 block">Concierge</span>
-              <h2 className="text-5xl md:text-8xl font-display uppercase tracking-tight leading-none mb-12">Personal <br /> Archiving</h2>
+              <span className="text-brand-gold text-[10px] font-black uppercase tracking-[0.6em] mb-6 block">Contact</span>
+              <h2 className="text-5xl md:text-8xl font-display uppercase tracking-tight leading-none mb-12">Personal <br /> Support</h2>
               <p className="text-brand-black/40 font-serif italic text-lg md:text-xl max-w-sm mx-auto lg:mx-0 leading-relaxed mb-12">
-                Our specialists are available for tailored consultations regarding size, fit, and archival preservation.
+                Our team is available to help you with size consultations, fit concerns, and order tracking.
               </p>
               <button 
                 onClick={() => {
@@ -289,19 +289,19 @@ export default function Home() {
                 }}
                 className="luxury-button w-full md:w-auto"
               >
-                Reach Out
+                Get In Touch
               </button>
            </div>
            <div className="bg-brand-beige p-8 md:p-24 space-y-12">
               <div className="space-y-4">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Studio Line</span>
-                 <p id="contact-reveal" className="text-3xl font-display tracking-tight text-brand-black/40 italic">Details encrypted for privacy</p>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Phone Support</span>
+                 <p id="contact-reveal" className="text-3xl font-display tracking-tight text-brand-black/40 italic">Click to reveal contact</p>
               </div>
               <div className="space-y-4">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Headquarters</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Location</span>
                  <p className="text-sm font-black uppercase tracking-[0.2em] leading-loose">
-                    Plot 12, Okhla Industrial Area <br />
-                    New Delhi, India 110020
+                    New Delhi, India <br />
+                    Available Pan-India
                  </p>
               </div>
            </div>

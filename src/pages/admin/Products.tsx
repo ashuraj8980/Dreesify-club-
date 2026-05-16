@@ -195,7 +195,7 @@ export default function AdminProducts() {
         <div className="container mx-auto px-4 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-8 md:gap-12 text-center md:text-left">
           <div>
             <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20 flex items-center justify-center md:justify-start mb-6 hover:text-brand-black transition-colors">
-              <ChevronLeft className="w-3 h-3 mr-2" /> Archive Dashboard
+              <ChevronLeft className="w-3 h-3 mr-2" /> Dashboard
             </Link>
             <h1 className="text-4xl md:text-5xl font-display font-medium uppercase tracking-tight">Products</h1>
             <p className="text-brand-black/30 font-serif italic text-xs md:text-sm mt-3">{products.length} Products currently in the catalog.</p>
@@ -216,7 +216,7 @@ export default function AdminProducts() {
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-black/20" />
             <input 
               type="text" 
-              placeholder="Query by identity, essence..." 
+              placeholder="Search products by name or category..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-white border border-brand-black/5 pl-16 pr-6 py-5 text-xs font-black uppercase tracking-widest focus:border-brand-gold outline-none transition-all shadow-sm"
@@ -225,7 +225,7 @@ export default function AdminProducts() {
           <div className="flex gap-6">
             <button className="bg-white border border-brand-black/5 px-8 py-5 flex items-center space-x-3 hover:bg-brand-black hover:text-white transition-all shadow-sm">
               <Filter className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Refine</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Filter</span>
             </button>
           </div>
         </div>
@@ -290,7 +290,7 @@ export default function AdminProducts() {
             <form onSubmit={handleSubmit} className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Design Name *</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Product Name *</label>
                   <input 
                     type="text" 
                     required
@@ -300,7 +300,7 @@ export default function AdminProducts() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Narrative / Description</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Description</label>
                   <textarea 
                     rows={4}
                     value={formData.description}
@@ -369,14 +369,14 @@ export default function AdminProducts() {
                 </div>
 
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Visual Assets (Upload or URL)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Product Images (Upload or URL)</label>
                   <div className="space-y-6">
                     {formData.images?.map((img, idx) => (
                       <div key={idx} className="space-y-4 p-4 border-2 border-gray-100 bg-gray-50/30 rounded-sm">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-grow space-y-4">
                             <div className="space-y-2">
-                              <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Option 1: Selection from Gallery</p>
+                              <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Option 1: Upload from Gallery</p>
                               <div className="relative">
                                 <input 
                                   type="file" 
@@ -392,12 +392,12 @@ export default function AdminProducts() {
                                   {uploadingImageIndex === idx ? (
                                     <>
                                       <div className="w-3 h-3 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
-                                      Processing Archive...
+                                      Uploading Image...
                                     </>
                                   ) : (
                                     <>
                                       <Upload className="w-3 h-3" />
-                                      {img ? 'Replace Aesthetic' : 'Select from Gallery'}
+                                      {img ? 'Replace Image' : 'Select Image'}
                                     </>
                                   )}
                                 </label>

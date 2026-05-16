@@ -166,15 +166,15 @@ export default function Checkout() {
         
         <div className="flex flex-col md:flex-row items-center justify-between mb-12 md:mb-20 gap-8 text-center md:text-left">
           <div className="w-full">
-            <span className="text-[10px] uppercase tracking-[0.4em] font-black text-brand-black/40 block mb-2">Finalization</span>
-            <h1 className="text-4xl md:text-6xl font-display font-medium uppercase tracking-tight">Secure Procurement</h1>
+            <span className="text-[10px] uppercase tracking-[0.4em] font-black text-brand-black/40 block mb-2">Checkout</span>
+            <h1 className="text-4xl md:text-6xl font-display font-medium uppercase tracking-tight">Secure Payment</h1>
           </div>
           <button 
             onClick={() => navigate('/cart')}
             className="flex items-center justify-center w-full md:w-auto space-x-4 text-[10px] uppercase tracking-widest font-bold group border border-brand-black/5 py-4 md:border-0 md:py-0"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-2" />
-            <span>Return to Archive</span>
+            <span>Return to Cart</span>
           </button>
         </div>
 
@@ -186,15 +186,15 @@ export default function Checkout() {
             <section className="space-y-12">
               <div className="flex items-center space-x-8">
                 <span className="w-10 h-10 rounded-full border border-brand-black flex items-center justify-center text-xs font-bold">01</span>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/40 underline-offset-8 decoration-1 underline decoration-brand-black/10">Destination Address</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/40 underline-offset-8 decoration-1 underline decoration-brand-black/10">Shipping Details</h2>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {[
-                  { name: 'fullName', label: 'Full Denomination', type: 'text' },
-                  { name: 'email', label: 'Electronic Mail', type: 'email' },
-                  { name: 'mobile', label: 'Telephonic Contact', type: 'tel' },
-                  { name: 'pincode', label: 'Postal Code', type: 'text' },
+                  { name: 'fullName', label: 'Full Name', type: 'text' },
+                  { name: 'email', label: 'Email Address', type: 'email' },
+                  { name: 'mobile', label: 'Phone Number', type: 'tel' },
+                  { name: 'pincode', label: 'Pincode', type: 'text' },
                 ].map((field) => (
                   <div key={field.name} className="space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-widest text-brand-black opacity-40">{field.label}</label>
@@ -203,8 +203,8 @@ export default function Checkout() {
                       name={field.name}
                       value={String(shippingAddress[field.name as keyof Address] || '')}
                       onChange={handleInputChange}
-                      placeholder={`Enter ${field.label.toLowerCase()}...`}
-                      className="w-full bg-white md:bg-transparent border border-brand-black/5 md:border-t-0 md:border-x-0 md:border-b md:border-brand-black/10 focus:border-brand-black p-4 md:px-0 md:py-4 text-sm font-medium outline-none transition-all duration-500 placeholder:text-brand-black/20 placeholder:italic"
+                      placeholder={`Enter your ${field.label.toLowerCase()}...`}
+                      className="w-full bg-white md:bg-transparent border border-brand-black/5 md:border-t-0 md:border-x-0 md:border-b md:border-brand-black/10 focus:border-brand-black p-4 md:px-0 md:py-4 text-sm font-medium outline-none transition-all duration-500 placeholder:text-brand-black/20"
                     />
                   </div>
                 ))}
@@ -215,8 +215,8 @@ export default function Checkout() {
                     value={shippingAddress.address}
                     onChange={handleInputChange}
                     rows={2}
-                    placeholder="Provide full logistics coordinates..."
-                    className="w-full bg-white md:bg-transparent border border-brand-black/5 md:border-t-0 md:border-x-0 md:border-b md:border-brand-black/10 focus:border-brand-black p-4 md:px-0 md:py-4 text-sm font-medium outline-none transition-all duration-500 resize-none placeholder:text-brand-black/20 placeholder:italic"
+                    placeholder="Enter your street address..."
+                    className="w-full bg-white md:bg-transparent border border-brand-black/5 md:border-t-0 md:border-x-0 md:border-b md:border-brand-black/10 focus:border-brand-black p-4 md:px-0 md:py-4 text-sm font-medium outline-none transition-all duration-500 resize-none placeholder:text-brand-black/20"
                   />
                 </div>
                 <div className="space-y-4">
@@ -246,7 +246,7 @@ export default function Checkout() {
             <section className="space-y-12 pb-32 md:pb-0">
               <div className="flex items-center space-x-8">
                 <span className="w-10 h-10 rounded-full border border-brand-black flex items-center justify-center text-xs font-bold">02</span>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/40 underline-offset-8 decoration-1 underline decoration-brand-black/10">Valuation Protocol</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/40 underline-offset-8 decoration-1 underline decoration-brand-black/10">Payment Method</h2>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
@@ -259,9 +259,9 @@ export default function Checkout() {
                 >
                   <CreditCard className="w-6 h-6" />
                   <div className="space-y-2">
-                    <span className="text-sm font-display uppercase tracking-widest block">Electronic Transit</span>
-                    <span className={cn("text-[9px] font-bold uppercase tracking-widest leading-relaxed", paymentMethod === 'online' ? 'text-brand-gold' : 'text-brand-black/30')}>
-                      30% Archival Discount Applied
+                    <span className="text-sm font-display uppercase tracking-widest block">Pay Online</span>
+                    <span className={cn("text-[8px] font-bold uppercase tracking-widest leading-relaxed", paymentMethod === 'online' ? 'text-brand-gold' : 'text-brand-black/30')}>
+                      30% INSTANT DISCOUNT
                     </span>
                   </div>
                   {paymentMethod === 'online' && (
@@ -278,9 +278,9 @@ export default function Checkout() {
                 >
                   <Truck className="w-6 h-6" />
                   <div className="space-y-2">
-                    <span className="text-sm font-display uppercase tracking-widest block">Standard Settlement</span>
-                    <span className="text-[9px] font-bold uppercase tracking-widest opacity-30">
-                      Regular valuation applies
+                    <span className="text-sm font-display uppercase tracking-widest block">Cash on Delivery</span>
+                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-30">
+                      Standard delivery
                     </span>
                   </div>
                   {paymentMethod === 'cod' && (
@@ -304,7 +304,7 @@ export default function Checkout() {
                   ) : (
                     <>
                       <Lock className="w-4 h-4" />
-                      <span className="text-xs font-bold uppercase tracking-[0.1em] md:tracking-[0.4em]">Finalize Global Procurement</span>
+                      <span className="text-xs font-bold uppercase tracking-[0.1em] md:tracking-[0.4em]">Complete Purchase</span>
                     </>
                   )}
                 </button>
@@ -316,7 +316,7 @@ export default function Checkout() {
           <div className="lg:col-span-4">
             <div className="bg-white border border-brand-black/5 p-10 lg:p-12 sticky top-32 space-y-16 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
               <div className="space-y-4">
-                <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/40">Archive Preview</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/40">Order Summary</h2>
                 <div className="space-y-8 max-h-[300px] overflow-y-auto pr-4 custom-scrollbar">
                   {cart.map((item) => (
                     <div key={`${item.id}-${item.selectedSize}`} className="flex space-x-6 py-2">
@@ -357,29 +357,29 @@ export default function Checkout() {
 
               <div className="space-y-6">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-brand-black/40">
-                  <span>Valuation</span>
+                  <span>Subtotal</span>
                   <span>{formatCurrency(cartTotal)}</span>
                 </div>
                 {onlinePaymentDiscount > 0 && (
                   <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-brand-gold italic">
-                    <span>Incentive (30%)</span>
+                    <span>Online Discount (30%)</span>
                     <span>-{formatCurrency(onlinePaymentDiscount)}</span>
                   </div>
                 )}
                 {couponDiscount > 0 && (
                   <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-brand-black">
-                    <span>Archival Discount</span>
+                    <span>Coupon Discount</span>
                     <span>-{formatCurrency(couponDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-brand-black/40">
-                  <span>Logistics Fee</span>
+                  <span>Shipping</span>
                   <span className={shippingCharge === 0 ? 'text-brand-gold underline' : ''}>
-                    {shippingCharge === 0 ? 'Gratis' : formatCurrency(shippingCharge)}
+                    {shippingCharge === 0 ? 'Free' : formatCurrency(shippingCharge)}
                   </span>
                 </div>
                 <div className="pt-10 border-t-2 border-brand-black flex justify-between items-end">
-                  <span className="text-[11px] font-black uppercase tracking-[0.4em]">Final Balance</span>
+                  <span className="text-[11px] font-black uppercase tracking-[0.4em]">Total Amount</span>
                   <span className="text-3xl font-display font-medium tracking-tight">{formatCurrency(finalTotal)}</span>
                 </div>
               </div>

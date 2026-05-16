@@ -97,11 +97,11 @@ export default function AdminDashboard() {
           </Link>
           <Link to="/admin/products" className="flex items-center space-x-3 p-4 hover:bg-brand-beige text-brand-black/40 hover:text-brand-black transition-all font-black text-[10px] uppercase tracking-[0.2em]">
             <Package className="w-4 h-4" />
-            <span>Products</span>
+            <span>Manage Products</span>
           </Link>
           <Link to="/admin/orders" className="flex items-center space-x-3 p-4 hover:bg-brand-beige text-brand-black/40 hover:text-brand-black transition-all font-black text-[10px] uppercase tracking-[0.2em]">
             <ShoppingBag className="w-4 h-4" />
-            <span>Orders</span>
+            <span>Manage Orders</span>
           </Link>
         </nav>
       </aside>
@@ -109,8 +109,8 @@ export default function AdminDashboard() {
       <main className="flex-grow p-8 lg:p-16 space-y-16 max-w-7xl mx-auto">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-12 border-b border-brand-black/5 pb-12">
           <div>
-            <h1 className="text-5xl font-display font-medium tracking-tight uppercase">Archive Center</h1>
-            <p className="text-brand-black/30 font-serif italic text-sm mt-3 leading-relaxed">System-wide overview of the current collection strata.</p>
+            <h1 className="text-5xl font-display font-medium tracking-tight uppercase">Admin Dashboard</h1>
+            <p className="text-brand-black/30 font-serif italic text-sm mt-3 leading-relaxed">System-wide overview of your store performance.</p>
           </div>
           <div className="flex gap-6">
             <Link to="/admin/products" className="luxury-button !bg-brand-gold !text-brand-black hover:!bg-brand-black hover:!text-white flex items-center">
@@ -193,20 +193,20 @@ export default function AdminDashboard() {
         {/* Recent Orders Table */}
         <section className="bg-white border border-brand-black/5 shadow-sm overflow-hidden">
           <div className="p-10 border-b border-brand-black/5 flex items-center justify-between bg-brand-beige/20">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Historical Log</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.4em]">Recent Orders</h3>
             <Link to="/admin/orders" className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-gold flex items-center">
-              Full Archive <ArrowUpRight className="w-3 h-3 ml-2" />
+              View All <ArrowUpRight className="w-3 h-3 ml-2" />
             </Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-brand-offwhite text-[9px] font-black uppercase tracking-[0.3em] text-brand-black/40">
                 <tr>
-                  <th className="px-10 py-6">Identity</th>
-                  <th className="px-10 py-6">Curator</th>
-                  <th className="px-10 py-6">Statement</th>
-                  <th className="px-10 py-6">Condition</th>
-                  <th className="px-10 py-6 text-right">Access</th>
+                  <th className="px-10 py-6">Order ID</th>
+                  <th className="px-10 py-6">Customer</th>
+                  <th className="px-10 py-6">Total Amount</th>
+                  <th className="px-10 py-6">Status</th>
+                  <th className="px-10 py-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-black/5">
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-10 py-8 text-right">
-                      <Link to={`/order-confirmation/${order.id}`} className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-gold hover:text-brand-black transition-colors underline underline-offset-4">Manage</Link>
+                      <Link to={`/admin/orders`} className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-gold hover:text-brand-black transition-colors underline underline-offset-4">Manage</Link>
                     </td>
                   </tr>
                 ))}

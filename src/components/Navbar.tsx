@@ -110,7 +110,7 @@ export default function Navbar() {
                 className="hidden lg:flex items-center space-x-3 px-6 py-2.5 bg-brand-black text-white text-[9px] font-black uppercase tracking-[0.2em] hover:bg-brand-gold hover:text-brand-black transition-all duration-700"
               >
                 <span className="w-1.5 h-1.5 bg-brand-gold rounded-full" />
-                <span>Archive Control</span>
+                <span>Admin Panel</span>
               </Link>
             )}
           </div>
@@ -145,10 +145,10 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <div className="flex flex-col space-y-8 md:space-y-12">
+              <div className="flex flex-col space-y-6 md:space-y-8">
                 <Link 
                   to="/search" 
-                  className="text-4xl md:text-5xl font-display uppercase tracking-tight hover:italic transition-all"
+                  className="text-2xl md:text-3xl font-display uppercase tracking-tight hover:italic transition-all"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Shop All
@@ -157,7 +157,7 @@ export default function Navbar() {
                   <Link 
                     key={link.name} 
                     to={link.href} 
-                    className="text-4xl md:text-5xl font-display uppercase tracking-tight hover:italic transition-all"
+                    className="text-2xl md:text-3xl font-display uppercase tracking-tight hover:italic transition-all"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.name}
@@ -165,22 +165,22 @@ export default function Navbar() {
                 ))}
               </div>
 
-              <div className="mt-auto pt-10 border-t border-brand-black/5 space-y-10">
+              <div className="mt-auto pt-10 border-t border-brand-black/5 space-y-8">
                 <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-6 text-brand-black/40 group">
                   <User className="w-6 h-6" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] group-hover:text-brand-black transition-colors">Foundation Identity</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] group-hover:text-brand-black transition-colors">My Profile</span>
                 </Link>
                 <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-6 text-brand-black/40 group">
                   <Heart className="w-6 h-6" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] group-hover:text-brand-black transition-colors">Curated Favorites</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] group-hover:text-brand-black transition-colors">My Wishlist</span>
                 </Link>
                 {isAdmin && (
                   <Link 
                     to="/admin" 
                     onClick={() => setIsMenuOpen(false)} 
-                    className="flex items-center justify-between p-8 bg-brand-black text-white hover:bg-brand-gold hover:text-brand-black transition-all duration-700"
+                    className="flex items-center justify-between p-6 bg-brand-black text-white hover:bg-brand-gold hover:text-brand-black transition-all duration-700"
                   >
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">Archive Control</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">Admin Panel</span>
                     <ChevronRight className="w-5 h-5" />
                   </Link>
                 )}
