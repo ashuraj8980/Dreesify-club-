@@ -1,0 +1,8 @@
+{
+  "name": "DRESSIFY — The Ashu Kumar Archive",
+  "description": "A luxury minimalist fashion destination. Discover architectural silhouettes and curated seasonal pieces in a high-end commerce environment. Built for the modern aesthetic.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
