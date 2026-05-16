@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { Customer } from '../types';
@@ -17,7 +17,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ADMIN_EMAILS = ['ashukumar8076801908@gmail.com', 'sanachauhan393@gmail.com'];
+const ADMIN_EMAILS = [
+  'ashukumar8076801908@gmail.com', 
+  'sanachauhan393@gmail.com',
+  'dressifyindia@gmail.com',
+  'kumarashu807680@gmail.com'
+];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -25,6 +30,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Ensure persistence is set to local
+    setPersistence(auth, browserLocalPersistence).catch(err => {
+      console.error('Persistence error:', err);
+    });
+
     let unsubscribeCustomer: (() => void) | undefined;
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -118,13 +128,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err: any) {
       console.error('Login error:', err);
+      let errorMessage = `Access Denied: ${err.message}`;
+      
       if (err.code === 'auth/popup-blocked') {
-        import('react-hot-toast').then(m => m.default.error('Login Popup Blocked by Browser'));
+        errorMessage = 'Login Popup Blocked by Browser. Please allow popups for this site.';
       } else if (err.code === 'auth/cancelled-popup-request') {
-        // Ignore user cancellation
-      } else {
-        import('react-hot-toast').then(m => m.default.error(`Access Denied: ${err.message}`));
+        return; // Ignore user cancellation
+      } else if (err.code === 'auth/unauthorized-domain') {
+        errorMessage = 'This domain is not authorized in Firebase Console. Please add your Vercel domain to Authorized Domains in Firebase Auth settings.';
       }
+
+      import('react-hot-toast').then(m => m.default.error(errorMessage, { duration: 6000 }));
     }
   };
 

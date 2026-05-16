@@ -17,7 +17,12 @@ service cloud.firestore {
 
     function isTrustedAdmin() {
       return isSignedIn() && 
-        request.auth.token.email in ['ashukumar8076801908@gmail.com', 'sanachauhan393@gmail.com'] &&
+        request.auth.token.email in [
+          'ashukumar8076801908@gmail.com', 
+          'sanachauhan393@gmail.com',
+          'dressifyindia@gmail.com',
+          'kumarashu807680@gmail.com'
+        ] &&
         request.auth.token.email_verified == true;
     }
 

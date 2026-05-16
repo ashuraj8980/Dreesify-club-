@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Navbar() {
-  const { user, login, isAdmin, customer } = useAuth();
+  const { user, login, logout, isAdmin, customer } = useAuth();
   const { cartCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -186,7 +186,7 @@ export default function Navbar() {
                 )}
                 <button 
                   onClick={() => {
-                    auth.signOut();
+                    logout();
                     setIsMenuOpen(false);
                   }} 
                   className="flex items-center space-x-6 text-red-400 group pt-4"

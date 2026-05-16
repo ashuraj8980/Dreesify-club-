@@ -14,11 +14,13 @@ export default function CategoryProducts() {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!category) return;
       setLoading(true);
       try {
+        const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
         const q = query(
           collection(db, 'products'),
-          where('category', '==', category?.charAt(0).toUpperCase() + category!.slice(1))
+          where('category', '==', formattedCategory)
         );
         const querySnapshot = await getDocs(q);
         const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
