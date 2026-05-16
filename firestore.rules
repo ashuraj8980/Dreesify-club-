@@ -1,68 +1,108 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Safety Net
+    // 0. Global Safety Net
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Global Helpers
+    // --- Helper Functions ---
     function isSignedIn() {
       return request.auth != null;
-    }
-    
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/customers/$(request.auth.uid)) && 
-             get(/databases/$(database)/documents/customers/$(request.auth.uid)).data.role == 'admin';
     }
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/customers/$(request.auth.uid)).data.role == 'admin';
+    }
+
     function isValidId(id) {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
-    // --- PRODUCTS ---
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+
+    function isValidCustomer(data) {
+      return data.email is string && data.email.size() <= 256 &&
+             data.role in ['user', 'admin'] &&
+             data.displayName is string && data.displayName.size() <= 100 &&
+             data.id == request.auth.uid;
+    }
+
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() <= 200 &&
+             data.price is number && data.price >= 0 &&
+             data.salePrice is number && data.salePrice >= 0 &&
+             data.category is string &&
+             data.stock is number;
+    }
+
+    function isValidOrder(data) {
+      return data.userId == request.auth.uid &&
+             data.items is list && data.items.size() > 0 &&
+             data.total is number && data.total >= 0 &&
+             data.status in ['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'];
+    }
+
+    function isValidReview(data) {
+      return data.userId == request.auth.uid &&
+             data.productId is string &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5;
+    }
+
+    // --- Collection Rules ---
+
+    // Customers
+    match /customers/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isValidCustomer(incoming());
+      allow update: if isSignedIn() && (
+        (isOwner(userId) && isValidCustomer(incoming()) && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'addresses', 'wishlist'])) ||
+        isAdmin()
+      );
+    }
+
+    // Products
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() && isValidProduct(incoming());
     }
 
-    // --- CUSTOMERS ---
-    match /customers/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
-    }
-
-    // --- ORDERS ---
+    // Orders
     match /orders/{orderId} {
-      function isOrderOwner() {
-        return isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
-      }
-      
-      allow read: if isOrderOwner() || isAdmin();
-      allow create: if isSignedIn();
+      allow get: if isSignedIn() && (isOwner(existing().userId) || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isValidOrder(incoming());
       allow update: if isAdmin();
     }
 
-    // --- COUPONS ---
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidReview(incoming());
+      allow update, delete: if isSignedIn() && (isOwner(existing().userId) || isAdmin());
+    }
+
+    // Coupons (Admin only)
     match /coupons/{couponId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // --- REVIEWS ---
-    match /reviews/{reviewId} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow delete: if isAdmin() || (resource.data.userId == request.auth.uid);
-    }
-
-    // --- SETTINGS ---
+    // Settings
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();

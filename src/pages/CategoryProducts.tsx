@@ -42,14 +42,14 @@ export default function CategoryProducts() {
   return (
     <div className="bg-brand-offwhite min-h-screen">
       <div className="container mx-auto px-4 lg:px-12 py-24 md:py-32">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-24 gap-12 border-b border-brand-black/5 pb-12">
+        <div className="flex flex-col items-center text-center lg:flex-row lg:items-end lg:justify-between lg:text-left mb-24 gap-12 border-b border-brand-black/5 pb-12">
           <div className="space-y-4">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-center lg:justify-start space-x-4">
                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20">Archived Series</span>
                <div className="w-12 h-px bg-brand-black/10" />
             </div>
             <h1 className="text-6xl md:text-9xl font-display font-medium uppercase tracking-tight leading-none">{category}</h1>
-            <p className="text-brand-black/40 font-serif italic text-lg max-w-lg">
+            <p className="text-brand-black/40 font-serif italic text-lg max-w-lg mx-auto lg:mx-0">
               "Exploring the intersection of architectural geometry and the visceral experience of textile."
             </p>
           </div>

@@ -57,7 +57,7 @@ export default function Home() {
         </div>
         
         <div className="container mx-auto px-4 lg:px-12 relative z-10 text-white text-center">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -65,34 +65,34 @@ export default function Home() {
             >
               <div className="overflow-hidden mb-8">
                 <motion.span 
-                  initial={{ y: '100%' }}
-                  animate={{ y: 0 }}
-                  transition={{ duration: 0.8, delay: 1.2 }}
-                  className="font-display uppercase tracking-[0.8em] text-[10px] block text-brand-gold"
+                   initial={{ y: '100%' }}
+                   animate={{ y: 0 }}
+                   transition={{ duration: 0.8, delay: 1.2 }}
+                   className="font-display uppercase tracking-[0.8em] text-[10px] block text-brand-gold"
                 >
-                  Étude Series // Collection ‘26
+                   Étude Series // Collection ‘26
                 </motion.span>
               </div>
               
-              <h1 className="fluid-display-xl font-display font-medium mb-16 tracking-[-0.05em]">
-                POETRY <br />
-                <span className="italic font-serif lowercase tracking-tight text-brand-beige">of the self.</span>
+              <h1 className="fluid-display-xl font-display font-medium mb-12 tracking-[-0.05em]">
+                 POETRY <br />
+                 <span className="italic font-serif lowercase tracking-tight text-brand-beige">of the self.</span>
               </h1>
               
               <div className="flex flex-col items-center justify-center gap-12 mt-12">
-                <div className="max-w-md text-center">
-                  <p className="text-base text-brand-beige/60 font-light tracking-wide leading-relaxed italic font-serif">
-                    "Dressify explores the intersection of architectural geometry and the visceral experience of textile."
-                  </p>
-                </div>
-                <div className="flex flex-wrap justify-center gap-6">
-                  <Link to="/category/women" className="luxury-button">
-                    The Archive
-                  </Link>
-                  <Link to="/category/men" className="luxury-button-outline !border-white/40 !text-white hover:!bg-white hover:!text-brand-black">
-                    Curated Pieces
-                  </Link>
-                </div>
+                 <div className="max-w-lg text-center mx-auto">
+                   <p className="text-lg text-brand-beige/60 font-light tracking-wide leading-relaxed italic font-serif">
+                     "Dressify explores the intersection of architectural geometry and the visceral experience of textile."
+                   </p>
+                 </div>
+                 <div className="flex flex-wrap justify-center gap-8">
+                   <Link to="/category/women" className="luxury-button !px-12">
+                     The Archive
+                   </Link>
+                   <Link to="/category/men" className="luxury-button-outline !px-12 !border-white/40 !text-white hover:!bg-white hover:!text-brand-black">
+                     Curated Pieces
+                   </Link>
+                 </div>
               </div>
             </motion.div>
           </div>
@@ -128,12 +128,12 @@ export default function Home() {
                 </p>
              </div>
           </div>
-          <div className="lg:w-1/2 space-y-12">
+          <div className="lg:w-1/2 space-y-12 text-center lg:text-left">
             <span className="text-[10px] uppercase tracking-[0.5em] font-black text-brand-gold">Epilogue</span>
             <h2 className="fluid-display-lg font-display uppercase">Quiet <br /> Power</h2>
-            <div className="space-y-10 max-w-sm">
+            <div className="space-y-10 max-w-sm mx-auto lg:mx-0">
                <p className="text-lg text-brand-black/40 font-serif italic italic leading-relaxed">The Archive represents a collection of essential forms, distilled to their absolute necessity.</p>
-               <div className="flex flex-wrap items-center gap-6 md:gap-10">
+               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 md:gap-10">
                  <Link to="/category/women" className="luxury-button !px-12 md:!px-16 w-full md:w-auto text-center">The Women</Link>
                  <Link to="/category/men" className="nav-link !text-[11px] w-full md:w-auto text-center">View Men</Link>
                </div>
