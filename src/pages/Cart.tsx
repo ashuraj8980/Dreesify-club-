@@ -120,7 +120,7 @@ export default function Cart() {
 
           {/* Summary */}
           <div className="lg:col-span-4">
-            <div className="sticky top-32 space-y-12">
+            <div className="md:sticky md:top-32 space-y-12">
               <div className="space-y-8 border-b border-brand-black/5 pb-12">
                 <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/40">Summary</h2>
                 
@@ -137,25 +137,27 @@ export default function Cart() {
                   </div>
                   <div className="pt-8 flex justify-between items-end border-t border-brand-black/5">
                     <span className="text-[10px] font-black uppercase tracking-[0.4em]">Total Commitment</span>
-                    <span className="text-4xl font-display font-medium">{formatCurrency(cartTotal >= 10000 ? cartTotal : cartTotal + 250)}</span>
+                    <span className="text-3xl md:text-4xl font-display font-medium">{formatCurrency(cartTotal >= 10000 ? cartTotal : cartTotal + 250)}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-8">
+              <div className="space-y-8 pb-32 md:pb-0">
                 <p className="text-[10px] text-brand-black/40 font-medium leading-relaxed uppercase tracking-widest text-center">
                   Final taxation and global transit fees <br /> will be finalized at secure checkout.
                 </p>
 
-                <button 
-                  onClick={() => navigate('/checkout')}
-                  className="luxury-button w-full !py-6 flex items-center justify-center group"
-                >
-                  <span>Begin Procurement</span>
-                  <ChevronRight className="ml-4 w-4 h-4 transition-transform group-hover:translate-x-2" />
-                </button>
+                <div className="fixed md:static bottom-0 left-0 right-0 p-4 bg-white md:bg-transparent border-t md:border-0 border-brand-black/5 z-50 md:p-0">
+                  <button 
+                    onClick={() => navigate('/checkout')}
+                    className="luxury-button w-full !py-6 flex items-center justify-center group"
+                  >
+                    <span>Begin Procurement</span>
+                    <ChevronRight className="ml-4 w-4 h-4 transition-transform group-hover:translate-x-2" />
+                  </button>
+                </div>
                 
-                <div className="pt-8 grid grid-cols-2 gap-4">
+                <div className="pt-8 grid grid-cols-2 gap-4 hidden md:grid">
                    <div className="p-4 bg-brand-beige/20 flex flex-col items-center justify-center space-y-2">
                        <ShieldCheck className="w-5 h-5 text-brand-black/40" />
                        <span className="text-[8px] font-bold uppercase tracking-widest">Secure Commerce</span>

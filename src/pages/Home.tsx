@@ -108,8 +108,8 @@ export default function Home() {
 
       {/* Narrative Section */}
       <section className="container mx-auto px-4 lg:px-24">
-        <div className="flex flex-col lg:flex-row gap-32 items-center">
-          <div className="lg:w-1/2 relative">
+        <div className="flex flex-col lg:flex-row gap-8 md:gap-32 items-center">
+          <div className="lg:w-1/2 relative w-full">
              <motion.div 
                initial={{ opacity: 0, x: -50 }}
                whileInView={{ opacity: 1, x: 0 }}
@@ -143,8 +143,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Dual Featured Section */}
-      <section className="py-20 overflow-hidden">
+      {/* Featured Collections Grid */}
+      <section className="py-12 md:py-20 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2">
            {/* Women Featured */}
            <motion.div 
@@ -236,7 +236,7 @@ export default function Home() {
       </section>
 
       {/* Philosophy Section */}
-      <section className="bg-brand-black text-white py-40 overflow-hidden relative">
+      <section className="bg-brand-black text-white py-20 md:py-40 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-1/3 h-full overflow-hidden opacity-30 select-none pointer-events-none hidden lg:block">
            <span className="text-[20rem] font-display font-black leading-none opacity-10 absolute -right-20 top-1/2 -translate-y-1/2">D.</span>
         </div>
@@ -274,12 +274,12 @@ export default function Home() {
       </section>
 
       {/* Inquiries / Contact Section */}
-      <section className="container mx-auto px-4 lg:px-12 py-40 border-t border-brand-black/5">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-           <div>
+      <section className="container mx-auto px-4 lg:px-12 py-20 md:py-40 border-t border-brand-black/5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center">
+           <div className="text-center lg:text-left">
               <span className="text-brand-gold text-[10px] font-black uppercase tracking-[0.6em] mb-6 block">Concierge</span>
-              <h2 className="text-6xl md:text-8xl font-display uppercase tracking-tight leading-none mb-12">Personal <br /> Archiving</h2>
-              <p className="text-brand-black/40 font-serif italic text-xl max-w-sm leading-relaxed mb-12">
+              <h2 className="text-5xl md:text-8xl font-display uppercase tracking-tight leading-none mb-12">Personal <br /> Archiving</h2>
+              <p className="text-brand-black/40 font-serif italic text-lg md:text-xl max-w-sm mx-auto lg:mx-0 leading-relaxed mb-12">
                 Our specialists are available for tailored consultations regarding size, fit, and archival preservation.
               </p>
               <button 
@@ -287,12 +287,12 @@ export default function Home() {
                   const el = document.getElementById('contact-reveal');
                   if (el) el.innerText = '+91 8076801908';
                 }}
-                className="luxury-button"
+                className="luxury-button w-full md:w-auto"
               >
                 Reach Out
               </button>
            </div>
-           <div className="bg-brand-beige p-16 lg:p-24 space-y-12">
+           <div className="bg-brand-beige p-8 md:p-24 space-y-12">
               <div className="space-y-4">
                  <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Studio Line</span>
                  <p id="contact-reveal" className="text-3xl font-display tracking-tight text-brand-black/40 italic">Details encrypted for privacy</p>

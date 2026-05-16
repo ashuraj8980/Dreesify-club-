@@ -164,14 +164,14 @@ export default function Checkout() {
     <div className="bg-brand-offwhite min-h-screen">
       <div className="container mx-auto px-4 lg:px-12 py-12 md:py-24">
         
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-20 gap-8">
-          <div>
+        <div className="flex flex-col md:flex-row items-center justify-between mb-12 md:mb-20 gap-8 text-center md:text-left">
+          <div className="w-full">
             <span className="text-[10px] uppercase tracking-[0.4em] font-black text-brand-black/40 block mb-2">Finalization</span>
-            <h1 className="text-6xl font-display font-medium uppercase tracking-tight">Secure <br className="md:hidden" /> Procurement</h1>
+            <h1 className="text-4xl md:text-6xl font-display font-medium uppercase tracking-tight">Secure Procurement</h1>
           </div>
           <button 
             onClick={() => navigate('/cart')}
-            className="flex items-center space-x-4 text-[10px] uppercase tracking-widest font-bold group"
+            className="flex items-center justify-center w-full md:w-auto space-x-4 text-[10px] uppercase tracking-widest font-bold group border border-brand-black/5 py-4 md:border-0 md:py-0"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-2" />
             <span>Return to Archive</span>
@@ -243,25 +243,25 @@ export default function Checkout() {
             </section>
 
             {/* Step 2: Protocol */}
-            <section className="space-y-12">
+            <section className="space-y-12 pb-32 md:pb-0">
               <div className="flex items-center space-x-8">
                 <span className="w-10 h-10 rounded-full border border-brand-black flex items-center justify-center text-xs font-bold">02</span>
                 <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/40 underline-offset-8 decoration-1 underline decoration-brand-black/10">Valuation Protocol</h2>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                 <button 
                   onClick={() => setPaymentMethod('online')}
                   className={cn(
-                    "flex flex-col items-start p-10 space-y-6 border transition-all duration-500 relative text-left",
+                    "flex flex-col items-start p-6 md:p-10 space-y-4 md:space-y-6 border transition-all duration-500 relative text-left",
                     paymentMethod === 'online' ? "border-brand-black bg-brand-black text-white" : "border-brand-black/5 hover:border-brand-black/20"
                   )}
                 >
                   <CreditCard className="w-6 h-6" />
                   <div className="space-y-2">
                     <span className="text-sm font-display uppercase tracking-widest block">Electronic Transit</span>
-                    <span className={cn("text-[10px] font-bold uppercase tracking-widest leading-relaxed", paymentMethod === 'online' ? 'text-brand-gold' : 'text-brand-black/30')}>
-                      30% Archival Discount Applied Automatically
+                    <span className={cn("text-[9px] font-bold uppercase tracking-widest leading-relaxed", paymentMethod === 'online' ? 'text-brand-gold' : 'text-brand-black/30')}>
+                      30% Archival Discount Applied
                     </span>
                   </div>
                   {paymentMethod === 'online' && (
@@ -272,15 +272,15 @@ export default function Checkout() {
                 <button 
                   onClick={() => setPaymentMethod('cod')}
                   className={cn(
-                    "flex flex-col items-start p-10 space-y-6 border transition-all duration-500 relative text-left",
+                    "flex flex-col items-start p-6 md:p-10 space-y-4 md:space-y-6 border transition-all duration-500 relative text-left",
                     paymentMethod === 'cod' ? "border-brand-black bg-brand-black text-white" : "border-brand-black/5 hover:border-brand-black/20"
                   )}
                 >
                   <Truck className="w-6 h-6" />
                   <div className="space-y-2">
                     <span className="text-sm font-display uppercase tracking-widest block">Standard Settlement</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-30">
-                      Regular valuation sequence applies
+                    <span className="text-[9px] font-bold uppercase tracking-widest opacity-30">
+                      Regular valuation applies
                     </span>
                   </div>
                   {paymentMethod === 'cod' && (
@@ -288,28 +288,28 @@ export default function Checkout() {
                   )}
                 </button>
               </div>
-            </section>
 
-            <div className="pt-12">
-               <button 
-                onClick={handlePlaceOrder}
-                disabled={isProcessing}
-                className="luxury-button w-full !py-10 flex items-center justify-center space-x-6 disabled:opacity-50 group overflow-hidden relative"
-              >
-                <div className="absolute inset-0 bg-brand-gold/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-[1.5s]" />
-                {isProcessing ? (
-                   <div className="flex items-center space-x-4">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs uppercase tracking-[0.4em]">Processing Archive...</span>
-                   </div>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4" />
-                    <span className="text-xs font-bold uppercase tracking-[0.4em]">Finalize Global Procurement</span>
-                  </>
-                )}
-              </button>
-            </div>
+              <div className="fixed md:static bottom-0 left-0 right-0 p-4 bg-white md:bg-transparent border-t md:border-0 border-brand-black/5 z-50 md:p-0">
+                 <button 
+                  onClick={handlePlaceOrder}
+                  disabled={isProcessing}
+                  className="luxury-button w-full !py-6 md:!py-10 flex items-center justify-center space-x-6 disabled:opacity-50 group overflow-hidden relative"
+                >
+                  <div className="absolute inset-0 bg-brand-gold/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-[1.5s]" />
+                  {isProcessing ? (
+                     <div className="flex items-center space-x-4">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs uppercase tracking-[0.4em]">Processing...</span>
+                     </div>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4" />
+                      <span className="text-xs font-bold uppercase tracking-[0.1em] md:tracking-[0.4em]">Finalize Global Procurement</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </section>
           </div>
 
           {/* Right: Summary Box */}

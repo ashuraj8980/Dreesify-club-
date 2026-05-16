@@ -30,17 +30,17 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-brand-offwhite/90 backdrop-blur-md border-b border-brand-black/5">
-        <nav className="mx-auto px-4 lg:px-12 h-20 flex items-center justify-between relative">
+        <nav className="mx-auto px-4 lg:px-12 h-16 md:h-20 flex items-center justify-between relative">
           {/* Mobile Menu Toggle & Logo Container */}
           <div className="flex items-center lg:hidden">
             <button 
-              className="p-2 -ml-2 mr-4" 
+              className="p-2 -ml-2 mr-2 md:mr-4" 
               onClick={() => setIsMenuOpen(true)}
               aria-label="Open menu"
             >
               <Menu className="w-5 h-5 text-brand-black" />
             </button>
-            <Link to="/" className="text-2xl font-display font-medium tracking-tight uppercase">
+            <Link to="/" className="text-xl font-display font-medium tracking-tight uppercase">
               Dressify
             </Link>
           </div>
@@ -80,11 +80,11 @@ export default function Navbar() {
               )}
             </Link>
 
-            <div className="flex items-center border-l border-brand-black/5 ml-2 pl-4">
+            <div className="flex items-center border-l border-brand-black/5 ml-1 md:ml-2 pl-2 md:pl-4">
               {user ? (
                 <button 
                   onClick={() => navigate('/profile')} 
-                  className="flex items-center space-x-3 group"
+                  className="flex items-center space-x-2 md:space-x-3 group"
                 >
                   {user.photoURL ? (
                     <img src={user.photoURL} alt={user.displayName || ''} className="w-6 h-6 rounded-full border border-brand-black/10 group-hover:border-brand-gold transition-colors" />
@@ -96,10 +96,10 @@ export default function Navbar() {
               ) : (
                 <button 
                   onClick={login} 
-                  className="flex items-center space-x-3 group bg-brand-black text-white px-4 py-2 hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-sm"
+                  className="flex items-center space-x-2 md:space-x-3 group bg-brand-black text-white px-3 md:px-4 py-2 hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-sm"
                 >
                   <User className="w-[16px] h-[16px] group-hover:scale-110 transition-transform" />
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em]">Access Identity</span>
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em]">Login</span>
                 </button>
               )}
             </div>
@@ -145,12 +145,19 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <div className="flex flex-col space-y-12">
+              <div className="flex flex-col space-y-8 md:space-y-12">
+                <Link 
+                  to="/search" 
+                  className="text-4xl md:text-5xl font-display uppercase tracking-tight hover:italic transition-all"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Shop All
+                </Link>
                 {navLinks.map((link) => (
                   <Link 
                     key={link.name} 
                     to={link.href} 
-                    className="text-5xl font-display uppercase tracking-tight hover:italic transition-all"
+                    className="text-4xl md:text-5xl font-display uppercase tracking-tight hover:italic transition-all"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.name}

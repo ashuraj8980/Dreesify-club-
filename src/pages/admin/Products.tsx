@@ -191,20 +191,20 @@ export default function AdminProducts() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <header className="bg-white border-b border-brand-black/5 py-12">
-        <div className="container mx-auto px-4 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-12">
+      <header className="bg-white border-b border-brand-black/5 py-8 md:py-12">
+        <div className="container mx-auto px-4 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-8 md:gap-12 text-center md:text-left">
           <div>
-            <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20 flex items-center mb-6 hover:text-brand-black transition-colors">
+            <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20 flex items-center justify-center md:justify-start mb-6 hover:text-brand-black transition-colors">
               <ChevronLeft className="w-3 h-3 mr-2" /> Archive Dashboard
             </Link>
-            <h1 className="text-5xl font-display font-medium uppercase tracking-tight">Products</h1>
-            <p className="text-brand-black/30 font-serif italic text-sm mt-3">{products.length} Products currently in the catalog.</p>
+            <h1 className="text-4xl md:text-5xl font-display font-medium uppercase tracking-tight">Products</h1>
+            <p className="text-brand-black/30 font-serif italic text-xs md:text-sm mt-3">{products.length} Products currently in the catalog.</p>
           </div>
           <button 
             onClick={() => { resetForm(); setIsModalOpen(true); }}
-            className="luxury-button"
+            className="luxury-button w-full md:w-auto"
           >
-            <Plus className="w-4 h-4 mr-3" /> Add New Product
+            <Plus className="w-4 h-4 mr-2" /> New Product
           </button>
         </div>
       </header>
