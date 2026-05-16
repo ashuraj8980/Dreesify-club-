@@ -9,10 +9,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 
 export default function Profile() {
-  const { user, customer, logout, isAdmin } = useAuth();
+  const { user, customer, logout, isAdmin, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/');
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -36,8 +42,15 @@ export default function Profile() {
     fetchOrders();
   }, [user]);
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-brand-offwhite flex items-center justify-center">
+        <div className="w-12 h-12 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (!user) {
-    navigate('/');
     return null;
   }
 
@@ -71,7 +84,7 @@ export default function Profile() {
                 <h2 className="text-3xl font-display font-medium uppercase tracking-tight">{user.displayName || customer?.displayName || 'Member'}</h2>
                 <div className="flex items-center space-x-3">
                    <div className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse" />
-                   <p className="text-[10px] text-brand-black/40 font-black uppercase tracking-[0.3em]">{isAdmin ? 'ADMIN / OWNER' : (customer?.role || 'User')}</p>
+                   <p className="text-[10px] text-brand-black font-black uppercase tracking-[0.3em]">{isAdmin ? 'EXCLUSIVE OWNER' : (customer?.role || 'Verified Member')}</p>
                 </div>
               </div>
             </motion.div>
@@ -93,7 +106,7 @@ export default function Profile() {
                 >
                   <div className="flex items-center space-x-4">
                     <LayoutDashboard className="w-4 h-4" />
-                    <span>Admin Dashboard</span>
+                    <span>Manage Archive</span>
                   </div>
                   <ArrowUpRight className="w-3 h-3" />
                 </Link>

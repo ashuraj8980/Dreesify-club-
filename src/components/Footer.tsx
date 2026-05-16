@@ -60,20 +60,17 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-[10px] uppercase tracking-[0.2em] mb-10">Contact</h4>
             <div className="space-y-8">
-              <div className="group cursor-pointer" onClick={() => {
-                const tel = document.getElementById('footer-tel');
-                if (tel) tel.innerText = '+91 8076801908';
-              }}>
-                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-brand-black/20 block mb-2 group-hover:text-brand-gold transition-colors">Customer Support</span>
-                <span id="footer-tel" className="text-brand-black text-[10px] uppercase tracking-[0.4em] font-black underline underline-offset-8 decoration-brand-black/10 group-hover:decoration-brand-gold transition-colors">
-                  Contact Us
+              <div className="group">
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-brand-black/20 block mb-2">Customer Support</span>
+                <span className="text-brand-black text-[10px] uppercase tracking-[0.4em] font-black underline underline-offset-8 decoration-brand-black/10">
+                  support@dressify.in
                 </span>
               </div>
               
               <div>
                 <span className="text-[8px] font-black uppercase tracking-[0.3em] text-brand-black/20 block mb-2">Location</span>
                 <span className="text-brand-black/60 text-[10px] uppercase tracking-[0.4em] leading-relaxed block">
-                  New Delhi, India <br />
+                  India <br />
                   Global Distribution
                 </span>
               </div>

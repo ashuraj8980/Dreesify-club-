@@ -15,9 +15,15 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isAdmin() {
+    function isTrustedAdmin() {
       return isSignedIn() && 
-        get(/databases/$(database)/documents/customers/$(request.auth.uid)).data.role == 'admin';
+        request.auth.token.email in ['ashukumar8076801908@gmail.com', 'sanachauhan393@gmail.com'] &&
+        request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isTrustedAdmin() || (isSignedIn() && 
+        get(/databases/$(database)/documents/customers/$(request.auth.uid)).data.role == 'admin');
     }
 
     function isValidId(id) {
@@ -68,9 +74,12 @@ service cloud.firestore {
     match /customers/{userId} {
       allow get: if isSignedIn();
       allow list: if isAdmin();
-      allow create: if isSignedIn() && isValidCustomer(incoming());
+      allow create: if isSignedIn() && (isValidCustomer(incoming()) || isTrustedAdmin());
       allow update: if isSignedIn() && (
-        (isOwner(userId) && isValidCustomer(incoming()) && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'addresses', 'wishlist'])) ||
+        (isOwner(userId) && isValidCustomer(incoming()) && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'addresses', 'wishlist']) ||
+          (isTrustedAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'addresses', 'wishlist', 'role']))
+        )) ||
         isAdmin()
       );
     }

@@ -109,7 +109,7 @@ export default function AdminDashboard() {
       <main className="flex-grow p-8 lg:p-16 space-y-16 max-w-7xl mx-auto">
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-12 border-b border-brand-black/5 pb-12">
           <div>
-            <h1 className="text-5xl font-display font-medium tracking-tight uppercase">Admin Dashboard</h1>
+            <h1 className="text-5xl font-display font-medium tracking-tight uppercase">Archive Overview</h1>
             <p className="text-brand-black/30 font-serif italic text-sm mt-3 leading-relaxed">System-wide overview of your store performance.</p>
           </div>
           <div className="flex gap-6">

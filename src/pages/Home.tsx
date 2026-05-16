@@ -50,7 +50,7 @@ export default function Home() {
             initial={{ scale: 1.15, opacity: 0 }}
             animate={{ scale: 1, opacity: 0.5 }}
             transition={{ duration: 2.5, ease: [0.19, 1, 0.22, 1] }}
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop" 
+            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop" 
             alt="Hero" 
             className="w-full h-full object-cover grayscale brightness-75"
           />
@@ -117,7 +117,7 @@ export default function Home() {
                className="aspect-[4/5] overflow-hidden grayscale group"
              >
                 <img 
-                  src="https://images.unsplash.com/photo-1539109136881-3be0610931c3?q=80&w=1920&auto=format&fit=crop" 
+                  src="https://images.unsplash.com/photo-1539109136881-3be0610931c3?q=80&w=1000&auto=format&fit=crop" 
                   alt="Editorial" 
                   className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
                 />
@@ -153,7 +153,7 @@ export default function Home() {
             className="h-[80vh] relative group overflow-hidden"
            >
               <img 
-                src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=2000&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=1200&auto=format&fit=crop" 
                 alt="Women Feature" 
                 className="w-full h-full object-cover grayscale transition-transform duration-[4s] group-hover:scale-110"
               />
@@ -178,7 +178,7 @@ export default function Home() {
             className="h-[80vh] relative group overflow-hidden"
            >
               <img 
-                src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=2000&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1200&auto=format&fit=crop" 
                 alt="Men Feature" 
                 className="w-full h-full object-cover grayscale transition-transform duration-[4s] group-hover:scale-110"
               />
@@ -285,7 +285,7 @@ export default function Home() {
               <button 
                 onClick={() => {
                   const el = document.getElementById('contact-reveal');
-                  if (el) el.innerText = '+91 8076801908';
+                  if (el) el.innerText = 'support@dressify.in';
                 }}
                 className="luxury-button w-full md:w-auto"
               >
@@ -294,14 +294,14 @@ export default function Home() {
            </div>
            <div className="bg-brand-beige p-8 md:p-24 space-y-12">
               <div className="space-y-4">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Phone Support</span>
-                 <p id="contact-reveal" className="text-3xl font-display tracking-tight text-brand-black/40 italic">Click to reveal contact</p>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Digital Support</span>
+                 <p id="contact-reveal" className="text-3xl font-display tracking-tight text-brand-black/40 italic">Click to reveal details</p>
               </div>
               <div className="space-y-4">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Location</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Distribution</span>
                  <p className="text-sm font-black uppercase tracking-[0.2em] leading-loose">
-                    New Delhi, India <br />
-                    Available Pan-India
+                    Global Fulfillment <br />
+                    Pan-India Network
                  </p>
               </div>
            </div>

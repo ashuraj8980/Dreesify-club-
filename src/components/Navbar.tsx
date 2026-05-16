@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Menu, X, ChevronRight } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronRight, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -145,10 +145,10 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <div className="flex flex-col space-y-6 md:space-y-8">
+              <div className="flex flex-col space-y-4 md:space-y-6">
                 <Link 
                   to="/search" 
-                  className="text-2xl md:text-3xl font-display uppercase tracking-tight hover:italic transition-all"
+                  className="text-lg md:text-xl font-display uppercase tracking-tight hover:italic transition-all"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Shop All
@@ -157,7 +157,7 @@ export default function Navbar() {
                   <Link 
                     key={link.name} 
                     to={link.href} 
-                    className="text-2xl md:text-3xl font-display uppercase tracking-tight hover:italic transition-all"
+                    className="text-lg md:text-xl font-display uppercase tracking-tight hover:italic transition-all"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {link.name}
@@ -165,25 +165,35 @@ export default function Navbar() {
                 ))}
               </div>
 
-              <div className="mt-auto pt-10 border-t border-brand-black/5 space-y-8">
+              <div className="mt-auto pt-10 border-t border-brand-black/5 space-y-6">
                 <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-6 text-brand-black/40 group">
                   <User className="w-6 h-6" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] group-hover:text-brand-black transition-colors">My Profile</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] group-hover:text-brand-black transition-colors">My Profile</span>
                 </Link>
                 <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="flex items-center space-x-6 text-brand-black/40 group">
                   <Heart className="w-6 h-6" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] group-hover:text-brand-black transition-colors">My Wishlist</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] group-hover:text-brand-black transition-colors">My Wishlist</span>
                 </Link>
                 {isAdmin && (
                   <Link 
                     to="/admin" 
                     onClick={() => setIsMenuOpen(false)} 
-                    className="flex items-center justify-between p-6 bg-brand-black text-white hover:bg-brand-gold hover:text-brand-black transition-all duration-700"
+                    className="flex items-center justify-between p-5 bg-brand-black text-white hover:bg-brand-gold hover:text-brand-black transition-all duration-700"
                   >
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">Admin Panel</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">Manage Archive</span>
                     <ChevronRight className="w-5 h-5" />
                   </Link>
                 )}
+                <button 
+                  onClick={() => {
+                    auth.signOut();
+                    setIsMenuOpen(false);
+                  }} 
+                  className="flex items-center space-x-6 text-red-400 group pt-4"
+                >
+                  <LogOut className="w-6 h-6" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] group-hover:text-red-500 transition-colors">Logout Account</span>
+                </button>
               </div>
             </motion.div>
           </>

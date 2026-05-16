@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { Customer } from '../types';
 
@@ -25,50 +25,78 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      try {
-        setUser(user);
-        if (user) {
+    let unsubscribeCustomer: (() => void) | undefined;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      setUser(user);
+      
+      if (unsubscribeCustomer) {
+        unsubscribeCustomer();
+        unsubscribeCustomer = undefined;
+      }
+
+      if (user) {
+        try {
           const customerRef = doc(db, 'customers', user.uid);
-          const customerSnap = await getDoc(customerRef);
           
-          if (customerSnap.exists()) {
-            const data = customerSnap.data() as Customer;
-            // Auto-upgrade to admin if email matches
-            if (user.email && ADMIN_EMAILS.includes(user.email) && data.role !== 'admin') {
-              const { updateDoc } = await import('firebase/firestore');
-              await updateDoc(customerRef, { role: 'admin' });
-              data.role = 'admin';
+          // Use onSnapshot for real-time updates and more robust state management
+          unsubscribeCustomer = onSnapshot(customerRef, async (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data() as Customer;
+              
+              // Handle auto-upgrade to admin for trusted emails
+              const isTrusted = user.email && ADMIN_EMAILS.includes(user.email);
+              if (isTrusted && data.role !== 'admin') {
+                const { updateDoc } = await import('firebase/firestore');
+                // The new rules allow this upgrade for trusted emails
+                await updateDoc(customerRef, { role: 'admin' }).catch(e => console.warn('Role sync deferred:', e));
+                data.role = 'admin';
+              }
+              setCustomer(data);
+              setLoading(false);
+            } else {
+              // Create new record
+              const isTrusted = user.email && ADMIN_EMAILS.includes(user.email);
+              const newRole = isTrusted ? 'admin' : 'user';
+              const newCustomer: Customer = {
+                id: user.uid,
+                email: user.email || '',
+                displayName: user.displayName || 'Anonymous Partner',
+                photoURL: user.photoURL || '',
+                role: newRole,
+                addresses: [],
+                wishlist: [],
+                createdAt: Date.now(),
+              };
+              
+              try {
+                await setDoc(customerRef, newCustomer);
+                setCustomer(newCustomer);
+                setLoading(false);
+                import('react-hot-toast').then(m => m.default.success('Foundation Identity Created'));
+              } catch (err) {
+                console.error('Failed to create customer identity:', err);
+                setLoading(false);
+              }
             }
-            setCustomer(data);
-          } else {
-            const newRole = (user.email && ADMIN_EMAILS.includes(user.email)) ? 'admin' : 'user';
-            const newCustomer: Customer = {
-              id: user.uid,
-              email: user.email || '',
-              displayName: user.displayName || 'Anonymous Partner',
-              photoURL: user.photoURL || '',
-              role: newRole,
-              addresses: [],
-              wishlist: [],
-              createdAt: Date.now(),
-            };
-            await setDoc(customerRef, newCustomer);
-            setCustomer(newCustomer);
-            import('react-hot-toast').then(m => m.default.success('Foundation Identity Created'));
-          }
-        } else {
-          setCustomer(null);
+          }, (err) => {
+            console.error('Customer sync error:', err);
+            setLoading(false);
+          });
+        } catch (err) {
+          console.error('Auth sync prep error:', err);
+          setLoading(false);
         }
-      } catch (err) {
-        console.error('Auth synchronization error:', err);
-        import('react-hot-toast').then(m => m.default.error('Memory Sync Failed. Please refresh.'));
-      } finally {
+      } else {
+        setCustomer(null);
         setLoading(false);
       }
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeCustomer) unsubscribeCustomer();
+    };
   }, []);
 
   const login = async () => {
