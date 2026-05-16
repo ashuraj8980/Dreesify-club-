@@ -112,8 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const toggleWishlist = async (productId: string) => {
     if (!user) {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await login();
       return;
     }
 
