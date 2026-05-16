@@ -45,7 +45,7 @@ export default function CategoryProducts() {
         <div className="flex flex-col items-center text-center lg:flex-row lg:items-end lg:justify-between lg:text-left mb-24 gap-12 border-b border-brand-black/5 pb-12">
           <div className="space-y-4">
             <div className="flex items-center justify-center lg:justify-start space-x-4">
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20">Archived Series</span>
+               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20">Category</span>
                <div className="w-12 h-px bg-brand-black/10" />
             </div>
             <h1 className="text-6xl md:text-9xl font-display font-medium uppercase tracking-tight leading-none">{category}</h1>

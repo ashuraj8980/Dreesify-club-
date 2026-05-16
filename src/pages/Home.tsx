@@ -42,7 +42,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="space-y-40 pb-40">
+    <div className="space-y-24 md:space-y-40 pb-24 md:pb-40">
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden flex items-center bg-brand-black">
         <div className="absolute inset-0 z-0">
@@ -57,11 +57,12 @@ export default function Home() {
         </div>
         
         <div className="container mx-auto px-4 lg:px-12 relative z-10 text-white text-center">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto flex flex-col items-center">
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.2, delay: 0.8, ease: [0.19, 1, 0.22, 1] }}
+              className="flex flex-col items-center w-full"
             >
               <div className="overflow-hidden mb-8">
                 <motion.span 
@@ -74,22 +75,22 @@ export default function Home() {
                 </motion.span>
               </div>
               
-              <h1 className="fluid-display-xl font-display font-medium mb-12 tracking-[-0.05em]">
+              <h1 className="fluid-display-xl font-display font-medium mb-12 tracking-[-0.05em] text-center">
                  POETRY <br />
                  <span className="italic font-serif lowercase tracking-tight text-brand-beige">of the self.</span>
               </h1>
               
-              <div className="flex flex-col items-center justify-center gap-12 mt-12">
-                 <div className="max-w-lg text-center mx-auto">
-                   <p className="text-lg text-brand-beige/60 font-light tracking-wide leading-relaxed italic font-serif">
+              <div className="flex flex-col items-center justify-center gap-12 mt-12 w-full max-w-lg mx-auto">
+                 <div className="text-center">
+                   <p className="text-lg md:text-xl text-brand-beige/60 font-light tracking-wide leading-relaxed italic font-serif">
                      "Dressify explores the intersection of architectural geometry and the visceral experience of textile."
                    </p>
                  </div>
                  <div className="flex flex-wrap justify-center gap-8">
-                   <Link to="/category/women" className="luxury-button !px-12">
-                     The Archive
+                   <Link to="/category/women" className="luxury-button !px-12 md:!px-16">
+                     The Collection
                    </Link>
-                   <Link to="/category/men" className="luxury-button-outline !px-12 !border-white/40 !text-white hover:!bg-white hover:!text-brand-black">
+                   <Link to="/category/men" className="luxury-button-outline !px-12 md:!px-16 !border-white/40 !text-white hover:!bg-white hover:!text-brand-black">
                      Curated Pieces
                    </Link>
                  </div>

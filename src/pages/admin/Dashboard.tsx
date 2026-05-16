@@ -114,7 +114,7 @@ export default function AdminDashboard() {
           </div>
           <div className="flex gap-6">
             <Link to="/admin/products" className="luxury-button !bg-brand-gold !text-brand-black hover:!bg-brand-black hover:!text-white flex items-center">
-              <Plus className="w-4 h-4 mr-3" /> New Standard
+              <Plus className="w-4 h-4 mr-3" /> Add New Product
             </Link>
           </div>
         </header>

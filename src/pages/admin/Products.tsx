@@ -197,14 +197,14 @@ export default function AdminProducts() {
             <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20 flex items-center mb-6 hover:text-brand-black transition-colors">
               <ChevronLeft className="w-3 h-3 mr-2" /> Archive Dashboard
             </Link>
-            <h1 className="text-5xl font-display font-medium uppercase tracking-tight">Style Catalog</h1>
-            <p className="text-brand-black/30 font-serif italic text-sm mt-3">{products.length} Standards recorded in the archive.</p>
+            <h1 className="text-5xl font-display font-medium uppercase tracking-tight">Products</h1>
+            <p className="text-brand-black/30 font-serif italic text-sm mt-3">{products.length} Products currently in the catalog.</p>
           </div>
           <button 
             onClick={() => { resetForm(); setIsModalOpen(true); }}
             className="luxury-button"
           >
-            <Plus className="w-4 h-4 mr-3" /> Inject New Style
+            <Plus className="w-4 h-4 mr-3" /> Add New Product
           </button>
         </div>
       </header>
@@ -282,7 +282,7 @@ export default function AdminProducts() {
           >
             <div className="p-8 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
               <h2 className="text-xl font-black uppercase tracking-tighter">
-                {editingId ? 'Refine Style Details' : 'Inject New Style'}
+                {editingId ? 'Edit Product Details' : 'Add New Product'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 transition-colors"><X /></button>
             </div>
@@ -466,7 +466,7 @@ export default function AdminProducts() {
                     type="submit" 
                     className="luxury-button w-full py-6 flex items-center justify-center text-[11px]"
                   >
-                    {editingId ? 'Commit Changes' : 'Seal into Archive'}
+                    {editingId ? 'Save Changes' : 'Add to Catalog'}
                   </button>
                 </div>
               </div>

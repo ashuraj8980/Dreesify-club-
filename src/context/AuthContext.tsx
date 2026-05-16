@@ -78,7 +78,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
-        import('react-hot-toast').then(m => m.default.success(`Welcome, ${result.user.displayName || 'Partner'}`));
+        const isAdminUser = ADMIN_EMAILS.includes(result.user.email || '');
+        import('react-hot-toast').then(m => {
+          m.default.success(`Welcome, ${result.user.displayName || 'Partner'}`);
+          if (isAdminUser) {
+            setTimeout(() => {
+              m.default.success('Admin privileges active. Access Control Panel in the navigation.');
+            }, 1000);
+          }
+        });
       }
     } catch (err: any) {
       console.error('Login error:', err);
