@@ -93,32 +93,35 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         </div>
 
-        {/* Info - Elevated Typography */}
-        <div className="mt-8 space-y-3">
-          <div className="flex items-center justify-between overflow-hidden">
+        {/* Info - Elevated Typography Centered */}
+        <div className="mt-8 space-y-4 text-center px-2">
+          <div className="flex items-center justify-center space-x-3">
              <motion.h3 
-              className="text-[9px] uppercase tracking-[0.3em] text-brand-black/30 font-bold"
-              initial={{ x: -10, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
+              className="text-[9px] uppercase tracking-[0.4em] text-brand-black/30 font-black"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
              >
                {product.category}
              </motion.h3>
             {product.discountPercentage > 0 && (
-              <span className="text-[10px] font-medium text-brand-gold italic font-serif tracking-widest">Seasonal Sale</span>
+              <span className="w-1 h-1 rounded-full bg-brand-gold" />
+            )}
+            {product.discountPercentage > 0 && (
+              <span className="text-[9px] font-black text-brand-gold uppercase tracking-[0.2em]">Seasonal Sale</span>
             )}
           </div>
-          <h2 className="text-lg font-display font-medium tracking-tight text-brand-black leading-tight line-clamp-1">{product.name}</h2>
-          <div className="flex items-center justify-between">
+          <h2 className="text-xl font-display font-medium tracking-tight text-brand-black leading-tight line-clamp-1">{product.name}</h2>
+          <div className="flex flex-col items-center gap-2">
             <div className="flex items-center space-x-4">
-              <span className="text-base font-semibold text-brand-black tracking-tight">{formatCurrency(product.salePrice)}</span>
+              <span className="text-lg font-black text-brand-black tracking-tight">{formatCurrency(product.salePrice)}</span>
               {product.salePrice < product.price && (
                 <span className="text-xs text-brand-black/20 line-through tracking-tight font-mono">{formatCurrency(product.price)}</span>
               )}
             </div>
             {product.discountPercentage > 0 && (
-              <span className="text-[9px] font-black text-white bg-brand-gold px-2 py-1 uppercase tracking-tighter">
-                {product.discountPercentage}% OFF
+              <span className="text-[9px] font-black text-brand-gold/60 uppercase tracking-[0.3em]">
+                {product.discountPercentage}% Final Reductions
               </span>
             )}
           </div>

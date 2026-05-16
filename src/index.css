@@ -46,13 +46,15 @@
   }
 
   .fluid-display-xl {
-    font-size: clamp(3.5rem, 15vw, 12rem);
-    line-height: 0.85;
+    font-size: clamp(3rem, 10vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
   }
 
   .fluid-display-lg {
-    font-size: clamp(2.5rem, 10vw, 8rem);
-    line-height: 0.9;
+    font-size: clamp(2rem, 7vw, 6rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
   }
 
   .scrollbar-hide::-webkit-scrollbar {

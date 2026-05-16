@@ -56,42 +56,41 @@ export default function Home() {
           />
         </div>
         
-        <div className="container mx-auto px-4 lg:px-12 relative z-10 text-white">
-          <div className="max-w-6xl">
+        <div className="container mx-auto px-4 lg:px-12 relative z-10 text-white text-center">
+          <div className="max-w-5xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.2, delay: 0.8, ease: [0.19, 1, 0.22, 1] }}
             >
-              <div className="overflow-hidden mb-6">
+              <div className="overflow-hidden mb-8">
                 <motion.span 
                   initial={{ y: '100%' }}
                   animate={{ y: 0 }}
                   transition={{ duration: 0.8, delay: 1.2 }}
-                  className="font-display uppercase tracking-[0.6em] text-[9px] block text-brand-gold"
+                  className="font-display uppercase tracking-[0.8em] text-[10px] block text-brand-gold"
                 >
                   Étude Series // Collection ‘26
                 </motion.span>
               </div>
               
-              <h1 className="fluid-display-xl font-display font-medium mb-12 tracking-[-0.05em] lg:indent-[-0.05em]">
+              <h1 className="fluid-display-xl font-display font-medium mb-16 tracking-[-0.05em]">
                 POETRY <br />
-                <span className="ml-0 md:ml-48 lg:ml-72 italic font-serif lowercase tracking-tight text-brand-beige">of the self.</span>
+                <span className="italic font-serif lowercase tracking-tight text-brand-beige">of the self.</span>
               </h1>
               
-              <div className="flex flex-col md:flex-row items-end justify-between gap-16 mt-24">
-                <div className="max-w-md border-l border-white/10 pl-10">
+              <div className="flex flex-col items-center justify-center gap-12 mt-12">
+                <div className="max-w-md text-center">
                   <p className="text-base text-brand-beige/60 font-light tracking-wide leading-relaxed italic font-serif">
                     "Dressify explores the intersection of architectural geometry and the visceral experience of textile."
                   </p>
-                  <p className="text-[10px] uppercase tracking-[0.4em] text-white/20 mt-4">Manifesto Entry 0.1</p>
                 </div>
-                <div className="flex gap-6">
+                <div className="flex flex-wrap justify-center gap-6">
                   <Link to="/category/women" className="luxury-button">
-                    The Women's Archive
+                    The Archive
                   </Link>
-                  <Link to="/category/men" className="luxury-button-outline !border-white/20 !text-white hover:!bg-white hover:!text-brand-black">
-                    Curated for Him
+                  <Link to="/category/men" className="luxury-button-outline !border-white/40 !text-white hover:!bg-white hover:!text-brand-black">
+                    Curated Pieces
                   </Link>
                 </div>
               </div>
@@ -200,17 +199,13 @@ export default function Home() {
 
       {/* Trending Pieces */}
       <section className="container mx-auto px-4 lg:px-12">
-        <header className="flex flex-col md:flex-row items-end justify-between mb-32 gap-12 border-b border-brand-black/10 pb-16">
-          <div className="space-y-6 max-w-2xl">
-            <div className="flex items-center gap-4">
-              <span className="text-[10px] uppercase tracking-[0.5em] font-black text-brand-gold block">The Gallery</span>
-              <div className="w-12 h-px bg-brand-gold/30" />
-            </div>
-            <h2 className="fluid-display-lg font-display font-medium tracking-tighter uppercase">Artifacts</h2>
+        <header className="flex flex-col items-center text-center space-y-8 mb-32 border-b border-brand-black/10 pb-20">
+          <div className="space-y-4">
+            <span className="text-[10px] uppercase tracking-[0.6em] font-black text-brand-gold block">The Gallery</span>
+            <h2 className="fluid-display-lg font-display font-medium uppercase">Artifacts</h2>
           </div>
-          <div className="text-right">
-             <Link to="/search" className="nav-link !text-[12px] underline underline-offset-8">Explore All</Link>
-          </div>
+          <p className="text-brand-black/40 font-serif italic text-lg max-w-lg">Selected standards from the permanent collection, curated for distinction and longevity.</p>
+          <Link to="/search" className="nav-link !text-[12px] underline underline-offset-8">Explore Full Archive</Link>
         </header>
         
         {loading ? (
