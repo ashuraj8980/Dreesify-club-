@@ -65,9 +65,13 @@ export default function AdminProducts() {
     }
 
     setUploadingImageIndex(index);
-    const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-
+    
     try {
+      if (!storage) {
+        throw new Error('Storage service is not initialized. Please check your Firebase configuration.');
+      }
+      
+      const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
@@ -290,43 +294,43 @@ export default function AdminProducts() {
             <form onSubmit={handleSubmit} className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Product Name *</label>
+                  <label className="text-[12px] font-black uppercase tracking-widest text-brand-black">Product Name *</label>
                   <input 
                     type="text" 
                     required
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full border-2 border-gray-100 p-4 font-bold text-sm outline-none focus:border-black transition-all"
+                    className="w-full border-2 border-brand-black p-4 font-black text-sm outline-none focus:bg-brand-yellow/5 transition-all"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Description</label>
+                  <label className="text-[12px] font-black uppercase tracking-widest text-brand-black">Description</label>
                   <textarea 
                     rows={4}
                     value={formData.description}
                     onChange={e => setFormData({...formData, description: e.target.value})}
-                    className="w-full border-2 border-gray-100 p-4 font-medium text-sm outline-none focus:border-black transition-all"
+                    className="w-full border-2 border-brand-black p-4 font-bold text-sm outline-none focus:bg-brand-yellow/5 transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Regular Price (₹)</label>
+                    <label className="text-[12px] font-black uppercase tracking-widest text-brand-black">Regular Price (₹)</label>
                     <input 
                       type="number" 
                       required
                       value={formData.price}
                       onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                      className="w-full border-2 border-gray-100 p-4 font-bold text-sm outline-none focus:border-black transition-all"
+                      className="w-full border-2 border-brand-black p-4 font-black text-sm outline-none transition-all"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Sale Price (₹)</label>
+                    <label className="text-[12px] font-black uppercase tracking-widest text-brand-black">Sale Price (₹)</label>
                     <input 
                       type="number" 
                       required
                       value={formData.salePrice}
                       onChange={e => setFormData({...formData, salePrice: Number(e.target.value)})}
-                      className="w-full border-2 border-gray-100 p-4 font-bold text-sm outline-none focus:border-black transition-all"
+                      className="w-full border-2 border-brand-black p-4 font-black text-sm outline-none transition-all"
                     />
                   </div>
                 </div>

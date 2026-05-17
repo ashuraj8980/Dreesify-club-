@@ -46,6 +46,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (user) {
+        // Set loading to false early if it's a known admin email to speed up panel access
+        if (ADMIN_EMAILS.includes(user.email || '')) {
+          setLoading(false);
+        }
+
         try {
           const customerRef = doc(db, 'customers', user.uid);
           

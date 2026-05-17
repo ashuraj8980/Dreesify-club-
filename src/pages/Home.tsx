@@ -114,7 +114,7 @@ export default function Home() {
                initial={{ opacity: 0, x: -50 }}
                whileInView={{ opacity: 1, x: 0 }}
                transition={{ duration: 1.2 }}
-               className="aspect-[4/5] overflow-hidden grayscale group"
+               className="aspect-[4/5] overflow-hidden grayscale group border-4 border-brand-black shadow-2xl"
              >
                 <img 
                   src="https://images.unsplash.com/photo-1539109136881-3be0610931c3?q=80&w=1000&auto=format&fit=crop" 
@@ -122,21 +122,21 @@ export default function Home() {
                   className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
                 />
              </motion.div>
-             <div className="absolute -bottom-12 -right-12 w-1/2 aspect-square border border-brand-black/5 bg-brand-beige p-12 hidden lg:block shadow-2xl">
-                <span className="text-brand-gold text-[8px] font-black uppercase tracking-[0.6em] mb-4 block">Note 01</span>
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] leading-loose text-brand-black">
+             <div className="absolute -bottom-12 -right-12 w-1/2 aspect-square border-4 border-brand-black bg-brand-cream p-12 hidden lg:block shadow-2xl">
+                <span className="text-brand-black text-[10px] font-black uppercase tracking-[0.6em] mb-4 block">Note 01</span>
+                <p className="text-[13px] font-black uppercase tracking-[0.2em] leading-loose text-brand-black">
                   "Sustainable practice is not a choice, it is our unwavering commitment to the future of craftsmanship."
                 </p>
              </div>
           </div>
           <div className="lg:w-1/2 space-y-12 text-center lg:text-left">
-            <span className="text-[10px] uppercase tracking-[0.5em] font-black text-brand-gold">Epilogue</span>
-            <h2 className="fluid-display-lg font-display uppercase">Quiet <br /> Power</h2>
+            <span className="text-[12px] uppercase tracking-[0.5em] font-black text-brand-blue bg-brand-blue/5 px-4 py-2 border-2 border-brand-blue">Epilogue</span>
+            <h2 className="text-6xl md:text-8xl font-display font-black uppercase">Quiet <br /> Power</h2>
             <div className="space-y-10 max-w-sm mx-auto lg:mx-0">
-               <p className="text-lg text-brand-black/40 font-serif italic italic leading-relaxed">The Archive represents a collection of essential forms, distilled to their absolute necessity.</p>
-               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 md:gap-10">
-                 <Link to="/category/women" className="luxury-button !px-12 md:!px-16 w-full md:w-auto text-center">The Women</Link>
-                 <Link to="/category/men" className="nav-link !text-[11px] w-full md:w-auto text-center">View Men</Link>
+               <p className="text-xl text-brand-black font-serif italic leading-relaxed">The Archive represents a collection of essential forms, distilled to their absolute necessity.</p>
+               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-10">
+                 <Link to="/category/women" className="luxury-button w-full md:w-auto text-center !bg-brand-black !text-white hover:!bg-brand-yellow hover:!text-brand-black">The Women</Link>
+                 <Link to="/category/men" className="text-[13px] font-black uppercase tracking-[0.4em] hover:text-brand-blue underline underline-offset-8 transition-all">View Men</Link>
                </div>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function Home() {
            <motion.div 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            className="h-[80vh] relative group overflow-hidden"
+            className="h-[80vh] relative group overflow-hidden border-r-2 border-brand-black"
            >
               <img 
                 src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=1200&auto=format&fit=crop" 
@@ -162,12 +162,12 @@ export default function Home() {
                 <motion.span 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  className="text-brand-gold text-[10px] font-black uppercase tracking-[0.8em] mb-6 block"
+                  className="text-brand-yellow text-[12px] font-black uppercase tracking-[0.8em] mb-6 block"
                 >
                   Nuance
                 </motion.span>
-                <h3 className="text-5xl md:text-8xl text-white font-display uppercase tracking-tight mb-12">Feminine <br /> <span className="italic font-serif lowercase text-brand-beige">Structure</span></h3>
-                <Link to="/category/women" className="luxury-button !bg-white !text-brand-black hover:!bg-brand-gold">Discover Women</Link>
+                <h3 className="text-6xl md:text-9xl text-white font-display font-black uppercase tracking-tight mb-12">Feminine <br /> <span className="italic font-serif lowercase text-brand-cream">Structure</span></h3>
+                <Link to="/category/women" className="luxury-button !bg-white !text-brand-black hover:!bg-brand-yellow">Discover Women</Link>
               </div>
            </motion.div>
 
@@ -187,12 +187,12 @@ export default function Home() {
                 <motion.span 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  className="text-brand-gold text-[10px] font-black uppercase tracking-[0.8em] mb-6 block"
+                  className="text-brand-green text-[12px] font-black uppercase tracking-[0.8em] mb-6 block"
                 >
                   Distinction
                 </motion.span>
-                <h3 className="text-5xl md:text-8xl text-white font-display uppercase tracking-tight mb-12">Masculine <br /> <span className="italic font-serif lowercase text-brand-beige">Form</span></h3>
-                <Link to="/category/men" className="luxury-button !bg-white !text-brand-black hover:!bg-brand-gold">Discover Men</Link>
+                <h3 className="text-6xl md:text-9xl text-white font-display font-black uppercase tracking-tight mb-12">Masculine <br /> <span className="italic font-serif lowercase text-brand-cream">Form</span></h3>
+                <Link to="/category/men" className="luxury-button !bg-white !text-brand-black hover:!bg-brand-green">Discover Men</Link>
               </div>
            </motion.div>
         </div>

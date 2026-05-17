@@ -29,8 +29,8 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-brand-offwhite/90 backdrop-blur-md border-b border-brand-black/5">
-        <nav className="mx-auto px-4 lg:px-12 h-16 md:h-20 flex items-center justify-between relative">
+      <header className="sticky top-0 z-50 bg-white border-b-2 border-brand-black">
+        <nav className="mx-auto px-4 lg:px-12 h-20 md:h-24 flex items-center justify-between relative">
           {/* Mobile Menu Toggle & Logo Container */}
           <div className="flex items-center lg:hidden">
             <button 
@@ -38,16 +38,16 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(true)}
               aria-label="Open menu"
             >
-              <Menu className="w-5 h-5 text-brand-black" />
+              <Menu className="w-6 h-6 text-brand-black" />
             </button>
-            <Link to="/" className="text-xl font-display font-medium tracking-tight uppercase">
+            <Link to="/" className="text-2xl font-display font-black tracking-tight uppercase">
               Dressify
             </Link>
           </div>
 
           {/* Desktop Logo */}
           <Link to="/" className="hidden lg:block">
-            <span className="text-3xl font-display font-medium tracking-[-0.05em] uppercase">
+            <span className="text-4xl font-display font-black tracking-[-0.05em] uppercase">
               Dressify
             </span>
           </Link>
@@ -58,7 +58,7 @@ export default function Navbar() {
               <Link 
                 key={link.name} 
                 to={link.href}
-                className="nav-link"
+                className="text-[13px] uppercase tracking-[0.3em] font-black hover:text-brand-gold transition-colors"
               >
                 {link.name}
               </Link>
@@ -107,9 +107,9 @@ export default function Navbar() {
             {isAdmin && (
               <Link 
                 to="/admin" 
-                className="hidden lg:flex items-center space-x-3 px-6 py-2.5 bg-brand-black text-white text-[9px] font-black uppercase tracking-[0.2em] hover:bg-brand-gold hover:text-brand-black transition-all duration-700"
+                className="hidden lg:flex items-center space-x-3 px-8 py-3 bg-brand-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-brand-gold hover:text-brand-black transition-all duration-700 shadow-xl"
               >
-                <span className="w-1.5 h-1.5 bg-brand-gold rounded-full" />
+                <span className="w-2 h-2 bg-brand-yellow rounded-full animate-pulse" />
                 <span>Admin Panel</span>
               </Link>
             )}

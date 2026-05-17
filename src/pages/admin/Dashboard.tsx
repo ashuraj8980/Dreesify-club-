@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getCountFromServer, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Order, Product } from '../../types';
+import { Order } from '../../types';
 import { formatCurrency } from '../../lib/utils';
 import { 
   LayoutDashboard, 
@@ -39,26 +39,27 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [ordersSnap, productsSnap, customersSnap] = await Promise.all([
-          getDocs(collection(db, 'orders')),
-          getDocs(collection(db, 'products')),
-          getDocs(collection(db, 'customers'))
+        const [ordersCountSnap, productsCountSnap, customersCountSnap] = await Promise.all([
+          getCountFromServer(collection(db, 'orders')),
+          getCountFromServer(collection(db, 'products')),
+          getCountFromServer(collection(db, 'customers'))
         ]);
 
+        const recentOrdersQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(50));
+        const ordersSnap = await getDocs(recentOrdersQuery);
+        
         const orders = ordersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-        const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+        const approxRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
 
         setStats({
-          totalRevenue,
-          totalOrders: ordersSnap.size,
-          totalProducts: productsSnap.size,
-          totalCustomers: customersSnap.size
+          totalRevenue: approxRevenue,
+          totalOrders: ordersCountSnap.data().count,
+          totalProducts: productsCountSnap.data().count,
+          totalCustomers: customersCountSnap.data().count
         });
 
         // Recent Orders
-        const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(5));
-        const recentSnap = await getDocs(q);
-        setRecentOrders(recentSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order)));
+        setRecentOrders(orders.slice(0, 5));
 
       } catch (error) {
         console.error('Error fetching admin data:', error);
