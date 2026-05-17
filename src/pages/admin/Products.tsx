@@ -9,7 +9,8 @@ import {
   doc, 
   updateDoc, 
   query, 
-  orderBy 
+  orderBy,
+  serverTimestamp 
 } from 'firebase/firestore';
 import { db, storage } from '../../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -23,9 +24,9 @@ import {
   ChevronLeft,
   X,
   Link as LinkIcon,
-  CheckCircle,
   Check,
-  AlertCircle
+  AlertCircle,
+  CloudUpload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
@@ -94,8 +95,7 @@ export default function AdminProducts() {
     
     try {
       if (!storage) throw new Error('Cloud Storage unavailable.');
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
       const storageRef = ref(storage, `products/${fileName}`);
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
@@ -103,7 +103,7 @@ export default function AdminProducts() {
       const newImgs = [...(formData.images || [])];
       newImgs[index] = downloadURL;
       setFormData({ ...formData, images: newImgs });
-      toast.success('Asset uploaded');
+      toast.success('Asset uploaded successfully');
     } catch (error: any) {
       toast.error(`Upload Failed: ${error.message}`);
     } finally {
@@ -117,7 +117,7 @@ export default function AdminProducts() {
 
     if (!formData.name?.trim()) return toast.error('Designation is required');
     const validImages = (formData.images || []).filter(img => img && img.trim() !== '');
-    if (validImages.length === 0) return toast.error('At least one visual asset is required');
+    if (validImages.length === 0) return toast.error('At least one visual asset link is required');
 
     setIsSubmitting(true);
     
@@ -142,9 +142,9 @@ export default function AdminProducts() {
     };
 
     try {
-      // Set a timeout for the database call
+      // Extended timeout for mobile reliability (30 seconds)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Database operation timed out")), 10000)
+        setTimeout(() => reject(new Error("Database operation timed out. Please check your connection.")), 30000)
       );
 
       const dbOperation = editingId 
@@ -158,7 +158,6 @@ export default function AdminProducts() {
 
       await Promise.race([dbOperation, timeoutPromise]);
       
-      setIsSubmitting(false);
       setIsSuccess(true);
       toast.success('COLLECTION PIECE LIVE ON STOREFRONT', {
         style: {
@@ -178,13 +177,14 @@ export default function AdminProducts() {
       }, 2000);
 
     } catch (error: any) {
-      setIsSubmitting(false);
       console.error('Save error:', error);
       let msg = error.message;
       if (msg.includes('permission-denied')) {
-        msg = "Permission Denied. Verify you are a registered Admin.";
+        msg = "Permission Denied. Verify Admin status.";
       }
-      toast.error(msg);
+      toast.error(msg, { duration: 5000 });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -215,7 +215,7 @@ export default function AdminProducts() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Permanent deletion?')) {
+    if (window.confirm('Permanent deletion from archive?')) {
       try {
         await deleteDoc(doc(db, 'products', id));
         toast.success('Item Purged');
@@ -378,7 +378,7 @@ export default function AdminProducts() {
                       </select>
                     </div>
                     <div className="space-y-6 text-center">
-                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block text-center uppercase">Stock</label>
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block text-center uppercase">Stock Units</label>
                       <input 
                         type="number" 
                         value={formData.stock || ''}
@@ -388,33 +388,31 @@ export default function AdminProducts() {
                     </div>
                   </div>
 
-                  <div className="space-y-10 pt-10 border-t border-black/5 text-center">
+                  <div className="space-y-12 pt-10 border-t border-black/5 text-center">
                     <label className="text-[10px] font-black uppercase tracking-[0.5em] text-black/30 block text-center uppercase">Visual Identity</label>
-                    <div className="space-y-12 text-center">
+                    <div className="space-y-12 text-center max-w-lg mx-auto">
                       {formData.images?.map((img, idx) => (
                         <div key={idx} className="space-y-8 p-8 border-2 border-black/5 bg-black/5 text-center">
                           <div className="space-y-4 text-center">
-                            <label className="text-[8px] font-black uppercase tracking-[0.3em] text-black/40 block text-center uppercase">Asset URL (Permanent Link)</label>
-                            <div className="flex gap-4 text-center justify-center">
-                              <div className="relative flex-grow max-w-lg text-center">
-                                <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 text-black/20" />
-                                <input 
-                                  type="text" 
-                                  placeholder="HTTPS://IMAGE-HOST.COM/PHOTO.JPG"
-                                  value={img}
-                                  onChange={e => {
-                                    const newImgs = [...(formData.images || [])];
-                                    newImgs[idx] = e.target.value;
-                                    setFormData({...formData, images: newImgs});
-                                  }}
-                                  className="w-full bg-white border border-black/5 py-4 pl-12 pr-6 text-[10px] font-black text-center tracking-widest outline-none focus:border-[#C5A059] transition-all"
-                                />
-                              </div>
+                            <label className="text-[9px] font-black uppercase tracking-[0.3em] text-[#C5A059] block text-center uppercase">Direct Image Link (Recommended)</label>
+                            <div className="relative">
+                              <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 text-black/20" />
+                              <input 
+                                type="text" 
+                                placeholder="HTTPS://IMAGE-HOST.COM/PHOTO.JPG"
+                                value={img}
+                                onChange={e => {
+                                  const newImgs = [...(formData.images || [])];
+                                  newImgs[idx] = e.target.value;
+                                  setFormData({...formData, images: newImgs});
+                                }}
+                                className="w-full bg-white border border-black/10 py-5 pl-12 pr-6 text-center text-[10px] font-black tracking-widest outline-none focus:border-[#C5A059] transition-all uppercase"
+                              />
                             </div>
                           </div>
 
                           <div className="flex flex-col items-center justify-center space-y-6 text-center">
-                            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-black/20 text-center uppercase">OR</span>
+                            <span className="text-[8px] font-black uppercase tracking-[0.4em] text-black/20 text-center uppercase">OR UPLOAD FROM MOBILE</span>
                             <div className="relative text-center">
                               <input 
                                 type="file" 
@@ -425,9 +423,9 @@ export default function AdminProducts() {
                               />
                               <label 
                                 htmlFor={`file-${idx}`}
-                                className={`flex items-center px-10 py-4 border-2 border-black text-[9px] font-black uppercase tracking-[0.3em] cursor-pointer hover:bg-black hover:text-white transition-all ${uploadingImageIndex === idx ? 'opacity-50 animate-pulse' : ''}`}
+                                className={`flex items-center justify-center px-10 py-4 border-2 border-black text-[9px] font-black uppercase tracking-[0.3em] cursor-pointer hover:bg-black hover:text-white transition-all ${uploadingImageIndex === idx ? 'opacity-50' : ''}`}
                               >
-                                {uploadingImageIndex === idx ? 'Uploading...' : 'Upload File'}
+                                {uploadingImageIndex === idx ? 'Uploading...' : 'Choose File'}
                               </label>
                             </div>
                           </div>
@@ -438,20 +436,13 @@ export default function AdminProducts() {
                                 <img src={img} className="w-full h-full object-cover grayscale" alt="Preview" />
                               </div>
                               <div className="flex items-center space-x-2 text-[#C5A059] justify-center">
-                                <CheckCircle className="w-3 h-3" />
-                                <span className="text-[8px] font-black uppercase tracking-widest uppercase">Active Asset</span>
+                                <Check className="w-3 h-3" />
+                                <span className="text-[8px] font-black uppercase tracking-widest uppercase">Asset Ready</span>
                               </div>
                             </div>
                           )}
                         </div>
                       ))}
-                      <button 
-                        type="button" 
-                        onClick={() => setFormData(prev => ({ ...prev, images: [...(prev.images || []), ''] }))}
-                        className="w-full py-4 text-[9px] font-black uppercase tracking-[0.5em] text-black/30 hover:text-black transition-colors uppercase"
-                      >
-                        + Add Perspective
-                      </button>
                     </div>
                   </div>
 
@@ -462,23 +453,23 @@ export default function AdminProducts() {
                         id="trending"
                         checked={formData.isTrending}
                         onChange={e => setFormData({...formData, isTrending: e.target.checked})}
-                        className="w-5 h-5 accent-black"
+                        className="w-5 h-5 accent-[#C5A059]"
                       />
-                      <label htmlFor="trending" className="text-[10px] font-black uppercase tracking-[0.4em] cursor-pointer uppercase">Highlight as Trending</label>
+                      <label htmlFor="trending" className="text-[10px] font-black uppercase tracking-[0.4em] cursor-pointer uppercase">Highlight in Trending</label>
                     </div>
                     
                     <button 
                       type="submit" 
                       disabled={isSubmitting || isSuccess}
-                      className={`w-full py-8 text-white text-[12px] font-black uppercase tracking-[0.5em] transition-all duration-700 shadow-2xl disabled:opacity-80 flex items-center justify-center ${isSuccess ? 'bg-green-600' : isSubmitting ? 'bg-black' : 'bg-black hover:bg-[#C5A059] hover:text-black'}`}
+                      className={`w-full py-8 text-[12px] font-black uppercase tracking-[0.5em] transition-all duration-700 shadow-2xl disabled:opacity-80 flex items-center justify-center ${isSuccess ? 'bg-green-600 text-white' : 'bg-black text-white hover:bg-[#C5A059] hover:text-black'}`}
                     >
                       {isSubmitting ? (
                         <div className="flex items-center justify-center space-x-4">
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span className="uppercase">Synchronizing Archive...</span>
+                          <span className="uppercase">Establishing Cloud Sync...</span>
                         </div>
                       ) : isSuccess ? (
-                        <div className="flex items-center justify-center space-x-4">
+                        <div className="flex items-center justify-center space-x-4 text-center">
                           <Check className="w-5 h-5" />
                           <span className="uppercase">SUCCESSFULLY LIVE</span>
                         </div>
@@ -487,7 +478,7 @@ export default function AdminProducts() {
                       )}
                     </button>
                     {isSubmitting && (
-                      <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#C5A059] animate-pulse">Establishing Secure Database Connection...</p>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#C5A059] animate-pulse uppercase">Waiting for Server Confirmation...</p>
                     )}
                   </div>
                 </div>
