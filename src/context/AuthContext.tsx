@@ -17,19 +17,37 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ADMIN_EMAILS = [
-  'ashukumar8076801908@gmail.com', 
-  'sanachauhan393@gmail.com',
-  'dressifyindia@gmail.com',
-  'kumarashu807680@gmail.com'
-];
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [adminEmails, setAdminEmails] = useState<string[]>([]);
 
   useEffect(() => {
+    const fetchAdminEmails = async () => {
+      const adminDocRef = doc(db, 'settings', 'admins');
+      try {
+        const docSnap = await getDoc(adminDocRef);
+        if (docSnap.exists() && docSnap.data().emails) {
+          setAdminEmails(docSnap.data().emails);
+        } else {
+          // If the document doesn't exist, create it with the default admin emails
+          const defaultAdmins = [
+            'ashukumar8076801908@gmail.com',
+            'sanachauhan393@gmail.com',
+            'dressifyindia@gmail.com',
+            'kumarashu807680@gmail.com'
+          ];
+          await setDoc(adminDocRef, { emails: defaultAdmins });
+          setAdminEmails(defaultAdmins);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin emails:", error);
+      }
+    };
+
+    fetchAdminEmails();
+
     // Ensure persistence is set to local
     setPersistence(auth, browserLocalPersistence).catch(err => {
       console.error('Persistence error:', err);
@@ -39,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      
+
       if (unsubscribeCustomer) {
         unsubscribeCustomer();
         unsubscribeCustomer = undefined;
@@ -47,20 +65,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (user) {
         // Set loading to false early if it's a known admin email to speed up panel access
-        if (ADMIN_EMAILS.includes(user.email || '')) {
+        if (adminEmails.includes(user.email || '')) {
           setLoading(false);
         }
 
         try {
           const customerRef = doc(db, 'customers', user.uid);
-          
+
           // Use onSnapshot for real-time updates and more robust state management
           unsubscribeCustomer = onSnapshot(customerRef, async (docSnap) => {
             if (docSnap.exists()) {
               const data = docSnap.data() as Customer;
-              
+
               // Handle auto-upgrade to admin for trusted emails
-              const isTrusted = user.email && ADMIN_EMAILS.includes(user.email);
+              const isTrusted = user.email && adminEmails.includes(user.email);
               if (isTrusted && data.role !== 'admin') {
                 const { updateDoc } = await import('firebase/firestore');
                 // The new rules allow this upgrade for trusted emails
@@ -71,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setLoading(false);
             } else {
               // Create new record
-              const isTrusted = user.email && ADMIN_EMAILS.includes(user.email);
+              const isTrusted = user.email && adminEmails.includes(user.email);
               const newRole = isTrusted ? 'admin' : 'user';
               const newCustomer: Customer = {
                 id: user.uid,
@@ -83,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 wishlist: [],
                 createdAt: Date.now(),
               };
-              
+
               try {
                 await setDoc(customerRef, newCustomer);
                 setCustomer(newCustomer);
@@ -112,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       unsubscribeAuth();
       if (unsubscribeCustomer) unsubscribeCustomer();
     };
-  }, []);
+  }, [adminEmails]);
 
   const login = async () => {
     try {
@@ -121,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
-        const isAdminUser = ADMIN_EMAILS.includes(result.user.email || '');
+        const isAdminUser = adminEmails.includes(result.user.email || '');
         import('react-hot-toast').then(m => {
           m.default.success(`Welcome, ${result.user.displayName || 'Partner'}`);
           if (isAdminUser) {
@@ -134,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       console.error('Login error:', err);
       let errorMessage = `Access Denied: ${err.message}`;
-      
+
       if (err.code === 'auth/popup-blocked') {
         errorMessage = 'Login Popup Blocked by Browser. Please allow popups for this site.';
       } else if (err.code === 'auth/cancelled-popup-request') {
@@ -151,7 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   };
 
-  const isAdmin = customer?.role === 'admin' || (user?.email ? ADMIN_EMAILS.includes(user.email) : false);
+  const isAdmin = customer?.role === 'admin';
 
   const isInWishlist = (productId: string) => {
     return customer?.wishlist?.includes(productId) || false;
@@ -176,8 +194,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!prev) return null;
         return {
           ...prev,
-          wishlist: isCurrentlyIn 
-            ? prev.wishlist.filter(id => id !== productId) 
+          wishlist: isCurrentlyIn
+            ? prev.wishlist.filter(id => id !== productId)
             : [...prev.wishlist, productId]
         };
       });
