@@ -59,7 +59,7 @@ function HeroSection() {
                         </div>
                     </div>
                     <div className="hidden md:block md:w-1/2 mt-10 md:mt-0">
-                         <img src="https://i.imgur.com/1q5I2aV.png" alt="Fashion Models" className="w-full h-auto object-contain"/>
+                         <img src="https://i.imgur.com/9iL1sC6.png" alt="Fashion Models" className="w-full h-auto object-contain"/>
                     </div>
                 </div>
             </div>
