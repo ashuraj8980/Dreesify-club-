@@ -62,7 +62,7 @@ export default function AdminProducts() {
     
     try {
       if (!storage) {
-        throw new Error('Storage service is not initialized.');
+        throw new Error('Storage service is not initialized. Check firebase.ts configuration.');
       }
       
       const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
@@ -76,8 +76,8 @@ export default function AdminProducts() {
       });
       toast.success('Image uploaded successfully');
     } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error(`Upload failed: ${error.message}`);
+      console.error('Upload error details:', error);
+      toast.error(`Upload failed: ${error.message || 'Unknown error'}`);
     } finally {
       setUploadingImageIndex(null);
     }
@@ -90,13 +90,14 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
+      if (!db) throw new Error("Firestore instance 'db' is undefined");
       const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       const fetchedProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setProducts(fetchedProducts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching products:', error);
-      toast.error('Failed to fetch product list');
+      toast.error(`Failed to fetch product list: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -109,27 +110,17 @@ export default function AdminProducts() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const validImages = formData.images?.filter(img => img.trim() !== '') || [];
+    // Filter out empty image strings but allow listing without images if necessary (using a default or empty array)
+    const validImages = formData.images?.filter(img => img && img.trim() !== '') || [];
     
     if (!formData.name?.trim()) {
       toast.error('Product name is required');
       return;
     }
-    if (formData.price === undefined || formData.price < 0) {
-      toast.error('Valid regular price is required');
-      return;
-    }
-    if (formData.salePrice === undefined || formData.salePrice < 0) {
-      toast.error('Valid sale price is required');
-      return;
-    }
-    if (validImages.length === 0) {
-      toast.error('At least one product image is required');
-      return;
-    }
-
-    const price = Number(formData.price);
-    const salePrice = Number(formData.salePrice);
+    
+    const price = Number(formData.price) || 0;
+    const salePrice = Number(formData.salePrice) || 0;
+    const stock = Number(formData.stock) || 0;
     const discountPercentage = price > salePrice 
       ? Math.round(((price - salePrice) / price) * 100) 
       : 0;
@@ -144,13 +135,15 @@ export default function AdminProducts() {
       subcategory: formData.subcategory || '',
       sizes: formData.sizes || [],
       colors: formData.colors || [],
-      images: validImages,
-      stock: Number(formData.stock) || 0,
+      images: validImages, // Always an array of strings
+      stock,
       isTrending: !!formData.isTrending,
       updatedAt: Date.now()
     };
 
     try {
+      if (!db) throw new Error("Firestore instance 'db' is undefined");
+      
       if (editingId) {
         await updateDoc(doc(db, 'products', editingId), productData);
         toast.success('Product updated');
@@ -168,7 +161,8 @@ export default function AdminProducts() {
       await fetchProducts();
     } catch (error: any) {
       console.error('Submit error details:', error);
-      toast.error(`Operation failed: ${error.message || 'Unknown database error'}`);
+      // Detailed error message to identify if it's a permission (Rules) or connection issue
+      toast.error(`Operation failed: ${error.code || 'error'} - ${error.message}`);
     }
   };
 
@@ -191,7 +185,7 @@ export default function AdminProducts() {
   const handleEdit = (product: Product) => {
     setFormData({
       ...product,
-      images: product.images.length > 0 ? product.images : ['']
+      images: product.images && product.images.length > 0 ? product.images : ['']
     });
     setEditingId(product.id);
     setIsModalOpen(true);
@@ -265,7 +259,7 @@ export default function AdminProducts() {
             {filteredProducts.map((product) => (
               <div key={product.id} className="group bg-white border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden relative">
                 <div className="aspect-[3/4] overflow-hidden bg-gray-50">
-                  <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <img src={product.images?.[0] || 'https://via.placeholder.com/300x400?text=No+Image'} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 </div>
                 
                 <div className="p-6 space-y-4">
