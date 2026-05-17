@@ -96,7 +96,7 @@ export default function Navbar() {
               ) : (
                 <button 
                   onClick={login} 
-                  className="flex items-center space-x-2 md:space-x-3 group bg-brand-black text-white px-3 md:px-4 py-2 hover:bg-brand-gold hover:text-brand-black transition-all duration-500 rounded-sm"
+                  className="flex items-center space-x-2 md:space-x-3 group bg-red-600 text-white px-3 md:px-4 py-2 hover:bg-red-700 hover:text-white transition-all duration-500 rounded-sm"
                 >
                   <User className="w-[16px] h-[16px] group-hover:scale-110 transition-transform" />
                   <span className="text-[9px] font-black uppercase tracking-[0.2em]">Login</span>
