@@ -1,18 +1,11 @@
 rules_version = '2';
-service azure.storage {
+
+service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      // Allow public read access to all files
-      allow read: if true;
-      
-      // Allow write access only to authenticated admins
-      allow write: if request.auth != null && 
-        request.auth.token.email in [
-          'ashukumar8076801908@gmail.com', 
-          'sanachauhan393@gmail.com',
-          'dressifyindia@gmail.com',
-          'kumarashu807680@gmail.com'
-        ];
+    // Only authenticated users can write (upload) to the 'products' folder.
+    match /products/{allPaths=**} {
+      allow read; // Anyone can read images
+      allow write: if request.auth != null;
     }
   }
 }
