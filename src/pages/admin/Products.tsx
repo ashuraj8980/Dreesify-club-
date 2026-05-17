@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { 
+  collection, 
+  getDocs, 
+  addDoc, 
+  deleteDoc, 
+  doc, 
+  updateDoc, 
+  query, 
+  orderBy,
+  serverTimestamp 
+} from 'firebase/firestore';
 import { db, storage } from '../../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Product } from '../../types';
@@ -9,18 +19,16 @@ import { formatCurrency } from '../../lib/utils';
 import { 
   Plus, 
   Search, 
-  Filter, 
-  MoreVertical, 
   Edit2, 
   Trash2, 
-  LayoutGrid, 
-  Table as TableIcon,
   ChevronLeft,
   X,
-  Upload,
-  ChevronRight
+  Link as LinkIcon,
+  Check,
+  AlertCircle,
+  CloudUpload
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
 
 export default function AdminProducts() {
@@ -30,14 +38,14 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   
-  // Form State
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
     description: '',
     price: 0,
     salePrice: 0,
-    discountPercentage: 0,
     category: 'Women',
     sizes: ['S', 'M', 'L', 'XL'],
     images: [''],
@@ -48,42 +56,21 @@ export default function AdminProducts() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadingImageIndex, setUploadingImageIndex] = useState<number | null>(null);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
-      return;
-    }
-
-    // Check file size (e.g., 5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB');
-      return;
-    }
-
-    setUploadingImageIndex(index);
-    
+  const fetchProducts = async () => {
+    setLoading(true);
     try {
-      if (!storage) {
-        throw new Error('Storage service is not initialized. Please check your Firebase configuration.');
-      }
-      
-      const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      const newImgs = [...(formData.images || [])];
-      newImgs[index] = downloadURL;
-      setFormData({ ...formData, images: newImgs });
-      toast.success('Image uploaded successfully');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload image');
+      const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const fetchedProducts = querySnapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      } as Product));
+      setProducts(fetchedProducts);
+    } catch (error: any) {
+      console.error('Fetch error:', error);
+      toast.error(`Sync Failed: ${error.message}`);
     } finally {
-      setUploadingImageIndex(null);
+      setLoading(false);
     }
   };
 
@@ -91,64 +78,113 @@ export default function AdminProducts() {
     if (!authLoading && !isAdmin) navigate('/');
   }, [isAdmin, authLoading, navigate]);
 
-  const fetchProducts = async () => {
-    try {
-      const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
-      setProducts(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (isAdmin) fetchProducts();
   }, [isAdmin]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.price || !formData.salePrice) {
-      toast.error('Please fill required fields');
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Format must be an image');
       return;
     }
 
-    // Auto-calculate discount percentage
-    const price = Number(formData.price);
-    const salePrice = Number(formData.salePrice);
+    setUploadingImageIndex(index);
+    
+    try {
+      if (!storage) throw new Error('Cloud Storage unavailable.');
+      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const storageRef = ref(storage, `products/${fileName}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      const newImgs = [...(formData.images || [])];
+      newImgs[index] = downloadURL;
+      setFormData({ ...formData, images: newImgs });
+      toast.success('Asset uploaded successfully');
+    } catch (error: any) {
+      toast.error(`Upload Failed: ${error.message}`);
+    } finally {
+      setUploadingImageIndex(null);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting || isSuccess) return;
+
+    if (!formData.name?.trim()) return toast.error('Designation is required');
+    const validImages = (formData.images || []).filter(img => img && img.trim() !== '');
+    if (validImages.length === 0) return toast.error('At least one visual asset link is required');
+
+    setIsSubmitting(true);
+    
+    const price = Number(formData.price) || 0;
+    const salePrice = Number(formData.salePrice) || price;
     const discountPercentage = price > salePrice 
       ? Math.round(((price - salePrice) / price) * 100) 
       : 0;
 
+    const productPayload = {
+      name: formData.name.trim(),
+      description: formData.description?.trim() || '',
+      price,
+      salePrice,
+      discountPercentage,
+      category: formData.category || 'Women',
+      sizes: formData.sizes || [],
+      images: validImages,
+      stock: Number(formData.stock) || 0,
+      isTrending: !!formData.isTrending,
+      updatedAt: Date.now()
+    };
+
     try {
-      if (editingId) {
-        await updateDoc(doc(db, 'products', editingId), {
-          ...formData,
-          price,
-          salePrice,
-          discountPercentage,
-          updatedAt: Date.now()
-        });
-        toast.success('Product updated');
-      } else {
-        await addDoc(collection(db, 'products'), {
-          ...formData,
-          price,
-          salePrice,
-          discountPercentage,
-          rating: 4.5,
-          reviewCount: Math.floor(Math.random() * 20) + 5,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        });
-        toast.success('Product added successfully');
+      // Extended timeout for mobile reliability (30 seconds)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Database operation timed out. Please check your connection.")), 30000)
+      );
+
+      const dbOperation = editingId 
+        ? updateDoc(doc(db, 'products', editingId), productPayload)
+        : addDoc(collection(db, 'products'), {
+            ...productPayload,
+            rating: 4.5,
+            reviewCount: 0,
+            createdAt: Date.now(),
+          });
+
+      await Promise.race([dbOperation, timeoutPromise]);
+      
+      setIsSuccess(true);
+      toast.success('COLLECTION PIECE LIVE ON STOREFRONT', {
+        style: {
+          background: '#000',
+          color: '#C5A059',
+          fontWeight: '900',
+          fontSize: '10px',
+          letterSpacing: '0.2em'
+        }
+      });
+
+      setTimeout(async () => {
+        setIsSuccess(false);
+        setIsModalOpen(false);
+        resetForm();
+        await fetchProducts();
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Save error:', error);
+      let msg = error.message;
+      if (msg.includes('permission-denied')) {
+        msg = "Permission Denied. Verify Admin status.";
       }
-      setIsModalOpen(false);
-      resetForm();
-      fetchProducts();
-    } catch (error) {
-      toast.error('Operation failed');
+      toast.error(msg, { duration: 5000 });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -158,7 +194,6 @@ export default function AdminProducts() {
       description: '',
       price: 0,
       salePrice: 0,
-      discountPercentage: 0,
       category: 'Women',
       sizes: ['S', 'M', 'L', 'XL'],
       images: [''],
@@ -166,318 +201,292 @@ export default function AdminProducts() {
       isTrending: false,
     });
     setEditingId(null);
+    setIsSubmitting(false);
+    setIsSuccess(false);
   };
 
   const handleEdit = (product: Product) => {
-    setFormData(product);
+    setFormData({
+      ...product,
+      images: product.images?.length ? product.images : ['']
+    });
     setEditingId(product.id);
     setIsModalOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this style?')) {
+    if (window.confirm('Permanent deletion from archive?')) {
       try {
         await deleteDoc(doc(db, 'products', id));
-        toast.success('Style removed');
-        fetchProducts();
-      } catch (error) {
-        toast.error('Deletion failed');
+        toast.success('Item Purged');
+        await fetchProducts();
+      } catch (error: any) {
+        toast.error(`Purge Failed: ${error.message}`);
       }
     }
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.category.toLowerCase().includes(searchTerm.toLowerCase())
+  if (authLoading) return (
+    <div className="min-h-screen bg-black flex items-center justify-center text-center">
+      <div className="w-12 h-12 border-2 border-[#C5A059] border-t-transparent rounded-full animate-spin" />
+    </div>
   );
 
-  if (authLoading) return null;
-
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <header className="bg-white border-b border-brand-black/5 py-8 md:py-12">
-        <div className="container mx-auto px-4 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-8 md:gap-12 text-center md:text-left">
-          <div>
-            <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20 flex items-center justify-center md:justify-start mb-6 hover:text-brand-black transition-colors">
-              <ChevronLeft className="w-3 h-3 mr-2" /> Dashboard
+    <div className="bg-white min-h-screen pb-20 text-center">
+      <header className="bg-black py-16 md:py-24 text-center">
+        <div className="container mx-auto px-6 text-center">
+          <div className="flex flex-col items-center space-y-8 text-center">
+            <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 hover:text-[#C5A059] transition-colors flex items-center justify-center">
+              <ChevronLeft className="w-3 h-3 mr-2" /> Back to Nexus
             </Link>
-            <h1 className="text-4xl md:text-5xl font-display font-medium uppercase tracking-tight">Products</h1>
-            <p className="text-brand-black/30 font-serif italic text-xs md:text-sm mt-3">{products.length} Products currently in the catalog.</p>
-          </div>
-          <button 
-            onClick={() => { resetForm(); setIsModalOpen(true); }}
-            className="luxury-button w-full md:w-auto"
-          >
-            <Plus className="w-4 h-4 mr-2" /> New Product
-          </button>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 md:px-12 py-20 space-y-16 max-w-7xl">
-        {/* Toolbar */}
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="flex-grow relative">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-black/20" />
-            <input 
-              type="text" 
-              placeholder="Search products by name or category..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-brand-black/5 pl-16 pr-6 py-5 text-xs font-black uppercase tracking-widest focus:border-brand-gold outline-none transition-all shadow-sm"
-            />
-          </div>
-          <div className="flex gap-6">
-            <button className="bg-white border border-brand-black/5 px-8 py-5 flex items-center space-x-3 hover:bg-brand-black hover:text-white transition-all shadow-sm">
-              <Filter className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Filter</span>
+            <h1 className="text-5xl md:text-7xl font-display font-medium uppercase tracking-tighter text-white text-center">Archive</h1>
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#C5A059] text-center">{products.length} Styles Live</p>
+            <button 
+              onClick={() => { resetForm(); setIsModalOpen(true); }}
+              className="px-16 py-6 bg-[#C5A059] text-black text-[11px] font-black uppercase tracking-[0.4em] hover:bg-white transition-all duration-500 shadow-2xl text-center"
+            >
+              Add New Piece
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Product Grid */}
+      <main className="container mx-auto px-6 py-20 max-w-7xl text-center">
+        <div className="max-w-3xl mx-auto mb-20 relative text-center">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-black/20" />
+          <input 
+            type="text" 
+            placeholder="SEARCH COLLECTION..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white border-2 border-black/5 pl-16 pr-6 py-6 text-center text-[11px] font-black uppercase tracking-widest focus:border-[#C5A059] outline-none transition-all"
+          />
+        </div>
+
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map(i => <div key={i} className="aspect-[3/4] bg-white animate-pulse" />)}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="aspect-[3/4] bg-black/5 animate-pulse" />
+            ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8">
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="group bg-white border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden relative">
-                <div className="aspect-[3/4] overflow-hidden bg-gray-50">
-                  <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 text-center">
+            {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((product) => (
+              <motion.div 
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                key={product.id} 
+                className="group bg-white border border-black/5 hover:border-[#C5A059] transition-all duration-700 p-4 text-center"
+              >
+                <div className="aspect-[3/4] overflow-hidden bg-black/5 grayscale group-hover:grayscale-0 transition-all duration-1000 text-center">
+                  <img src={product.images?.[0] || ''} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]" />
                 </div>
-                
-                <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[8px] font-black uppercase tracking-[0.4em] text-brand-black/30">{product.category}</span>
-                    <span className="text-[8px] font-black uppercase text-brand-gold bg-brand-gold/5 px-3 py-1 border border-brand-gold/10">{product.stock} IN STOCK</span>
-                  </div>
-                  <h3 className="font-display font-medium text-sm truncate uppercase tracking-tight text-brand-black leading-tight">{product.name}</h3>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                       <p className="font-black text-xs text-brand-black tracking-widest">{formatCurrency(product.salePrice)}</p>
-                       {product.price > product.salePrice && (
-                         <p className="text-[9px] text-brand-black/20 line-through font-mono tracking-tighter">{formatCurrency(product.price)}</p>
-                       )}
-                    </div>
-                    {product.discountPercentage > 0 && (
-                      <span className="text-[8px] font-black text-brand-gold italic tracking-[0.2em]">-{product.discountPercentage}%</span>
-                    )}
+                <div className="pt-8 pb-4 space-y-4 text-center">
+                  <span className="text-[8px] font-black uppercase tracking-[0.3em] text-black/30 block text-center uppercase">{product.category}</span>
+                  <h3 className="text-[11px] font-black uppercase tracking-widest text-black leading-tight truncate text-center uppercase">{product.name}</h3>
+                  <p className="font-black text-[11px] tracking-widest text-black text-center">{formatCurrency(product.salePrice)}</p>
+                  <div className="flex justify-center space-x-4 pt-4 text-center">
+                    <button onClick={() => handleEdit(product)} className="p-3 bg-black text-white hover:bg-[#C5A059] hover:text-black transition-colors"><Edit2 className="w-3 h-3" /></button>
+                    <button onClick={() => handleDelete(product.id)} className="p-3 border-2 border-black/10 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"><Trash2 className="w-3 h-3" /></button>
                   </div>
                 </div>
-
-                <div className="absolute top-4 right-4 flex flex-col space-y-3 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
-                  <button onClick={() => handleEdit(product)} className="p-3 bg-white text-brand-black shadow-2xl hover:bg-brand-black hover:text-white transition-colors border border-brand-black/5"><Edit2 className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => handleDelete(product.id)} className="p-3 bg-white text-red-500 shadow-2xl hover:bg-red-500 hover:text-white transition-colors border border-brand-black/5"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
       </main>
 
-      {/* Product Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl rounded-sm"
-          >
-            <div className="p-8 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-              <h2 className="text-xl font-black uppercase tracking-tighter">
-                {editingId ? 'Edit Product Details' : 'Add New Product'}
-              </h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 transition-colors"><X /></button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[12px] font-black uppercase tracking-widest text-brand-black">Product Name *</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full border-2 border-brand-black p-4 font-black text-sm outline-none focus:bg-brand-yellow/5 transition-all"
-                  />
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-xl text-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="bg-white w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col text-center"
+            >
+              <div className="px-10 py-10 border-b border-black/5 flex items-center justify-between text-center relative">
+                <div className="w-full text-center">
+                  <h2 className="text-3xl font-display font-medium uppercase tracking-tighter text-black text-center uppercase">
+                    {editingId ? 'Modify Style' : 'New Entry'}
+                  </h2>
+                  <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#C5A059] mt-2 text-center uppercase">Permanent Cloud Sync</p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[12px] font-black uppercase tracking-widest text-brand-black">Description</label>
-                  <textarea 
-                    rows={4}
-                    value={formData.description}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
-                    className="w-full border-2 border-brand-black p-4 font-bold text-sm outline-none focus:bg-brand-yellow/5 transition-all"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-black uppercase tracking-widest text-brand-black">Regular Price (₹)</label>
-                    <input 
-                      type="number" 
-                      required
-                      value={formData.price}
-                      onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                      className="w-full border-2 border-brand-black p-4 font-black text-sm outline-none transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-black uppercase tracking-widest text-brand-black">Sale Price (₹)</label>
-                    <input 
-                      type="number" 
-                      required
-                      value={formData.salePrice}
-                      onChange={e => setFormData({...formData, salePrice: Number(e.target.value)})}
-                      className="w-full border-2 border-brand-black p-4 font-black text-sm outline-none transition-all"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Available Stock Units</label>
-                  <input 
-                    type="number" 
-                    value={formData.stock}
-                    onChange={e => setFormData({...formData, stock: Number(e.target.value)})}
-                    className="w-full border-2 border-gray-100 p-4 font-bold text-sm outline-none focus:border-black transition-all"
-                  />
-                </div>
+                <button onClick={() => { if(!isSubmitting) setIsModalOpen(false); }} className="absolute right-10 p-3 hover:rotate-90 transition-transform"><X className="w-6 h-6" /></button>
               </div>
 
-              <div className="space-y-8">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Collection / Category</label>
-                  <select 
-                    value={formData.category}
-                    onChange={e => setFormData({...formData, category: e.target.value})}
-                    className="w-full border-2 border-gray-100 p-4 font-bold text-sm outline-none focus:border-black transition-all bg-white"
-                  >
-                    <option>Women</option>
-                    <option>Men</option>
-                    <option>Kids</option>
-                    <option>Accessories</option>
-                  </select>
-                </div>
+              <form onSubmit={handleSubmit} className="p-10 md:p-16 overflow-y-auto space-y-16 text-center">
+                <div className="space-y-12 text-center">
+                  <div className="space-y-6 text-center">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block text-center uppercase">Piece Designation</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="NAME OF THE OBJECT"
+                      value={formData.name}
+                      onChange={e => setFormData({...formData, name: e.target.value})}
+                      className="w-full border-b-2 border-black/10 py-4 font-display text-2xl text-center outline-none focus:border-[#C5A059] transition-all uppercase"
+                    />
+                  </div>
+                  
+                  <div className="space-y-6 text-center">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block text-center uppercase">Description</label>
+                    <textarea 
+                      rows={3}
+                      placeholder="NARRATIVE OF THE STYLE"
+                      value={formData.description}
+                      onChange={e => setFormData({...formData, description: e.target.value})}
+                      className="w-full border-2 border-black/5 p-6 text-center text-sm font-medium outline-none focus:border-[#C5A059] transition-all resize-none bg-black/5 uppercase tracking-wider"
+                    />
+                  </div>
 
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Available Sizes (Comma separated)</label>
-                  <input 
-                    type="text" 
-                    value={formData.sizes?.join(', ')}
-                    onChange={e => setFormData({...formData, sizes: e.target.value.split(',').map(s => s.trim())})}
-                    placeholder="e.g. S, M, L, XL"
-                    className="w-full border-2 border-gray-100 p-4 font-bold text-sm outline-none focus:border-black transition-all"
-                  />
-                  <p className="text-[9px] text-gray-400 italic">Example: S, M, L, XL, Universal</p>
-                </div>
+                  <div className="grid grid-cols-2 gap-12 text-center">
+                    <div className="space-y-6 text-center">
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block text-center uppercase">Retail (₹)</label>
+                      <input 
+                        type="number" 
+                        required
+                        value={formData.price || ''}
+                        onChange={e => setFormData({...formData, price: Number(e.target.value)})}
+                        className="w-full border-b-2 border-black/10 py-4 font-black text-center text-xl outline-none focus:border-black transition-all"
+                      />
+                    </div>
+                    <div className="space-y-6 text-center">
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[#C5A059] block text-center uppercase">Exclusive (₹)</label>
+                      <input 
+                        type="number" 
+                        required
+                        value={formData.salePrice || ''}
+                        onChange={e => setFormData({...formData, salePrice: Number(e.target.value)})}
+                        className="w-full border-b-2 border-[#C5A059]/30 py-4 font-black text-center text-xl outline-none focus:border-[#C5A059] transition-all"
+                      />
+                    </div>
+                  </div>
 
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Product Images (Upload or URL)</label>
-                  <div className="space-y-6">
-                    {formData.images?.map((img, idx) => (
-                      <div key={idx} className="space-y-4 p-4 border-2 border-gray-100 bg-gray-50/30 rounded-sm">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-grow space-y-4">
-                            <div className="space-y-2">
-                              <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Option 1: Upload from Gallery</p>
-                              <div className="relative">
-                                <input 
-                                  type="file" 
-                                  accept="image/*"
-                                  onChange={(e) => handleImageUpload(e, idx)}
-                                  className="hidden"
-                                  id={`file-upload-${idx}`}
-                                />
-                                <label 
-                                  htmlFor={`file-upload-${idx}`}
-                                  className={`w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-dashed ${uploadingImageIndex === idx ? 'border-brand-gold bg-brand-gold/5' : 'border-gray-200 hover:border-black'} transition-all cursor-pointer text-[10px] font-black uppercase tracking-widest`}
-                                >
-                                  {uploadingImageIndex === idx ? (
-                                    <>
-                                      <div className="w-3 h-3 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
-                                      Uploading Image...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Upload className="w-3 h-3" />
-                                      {img ? 'Replace Image' : 'Select Image'}
-                                    </>
-                                  )}
-                                </label>
-                              </div>
-                            </div>
+                  <div className="grid grid-cols-2 gap-12 text-center">
+                    <div className="space-y-6 text-center">
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block text-center uppercase">Sector</label>
+                      <select 
+                        value={formData.category}
+                        onChange={e => setFormData({...formData, category: e.target.value})}
+                        className="w-full border-b-2 border-black/10 py-4 font-black text-center text-[10px] outline-none focus:border-[#C5A059] transition-all bg-white uppercase tracking-widest"
+                      >
+                        <option value="Women">Women</option>
+                        <option value="Accessories">Accessories</option>
+                      </select>
+                    </div>
+                    <div className="space-y-6 text-center">
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block text-center uppercase">Stock Units</label>
+                      <input 
+                        type="number" 
+                        value={formData.stock || ''}
+                        onChange={e => setFormData({...formData, stock: Number(e.target.value)})}
+                        className="w-full border-b-2 border-black/10 py-4 font-black text-center text-xl outline-none transition-all"
+                      />
+                    </div>
+                  </div>
 
-                            <div className="space-y-2">
-                              <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Option 2: Direct Asset URL</p>
+                  <div className="space-y-12 pt-10 border-t border-black/5 text-center">
+                    <label className="text-[10px] font-black uppercase tracking-[0.5em] text-black/30 block text-center uppercase">Visual Identity</label>
+                    <div className="space-y-12 text-center max-w-lg mx-auto">
+                      {formData.images?.map((img, idx) => (
+                        <div key={idx} className="space-y-8 p-8 border-2 border-black/5 bg-black/5 text-center">
+                          <div className="space-y-4 text-center">
+                            <label className="text-[9px] font-black uppercase tracking-[0.3em] text-[#C5A059] block text-center uppercase">Direct Image Link (Recommended)</label>
+                            <div className="relative">
+                              <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 text-black/20" />
                               <input 
                                 type="text" 
+                                placeholder="HTTPS://IMAGE-HOST.COM/PHOTO.JPG"
                                 value={img}
-                                placeholder="https://external-archive.com/..."
                                 onChange={e => {
                                   const newImgs = [...(formData.images || [])];
                                   newImgs[idx] = e.target.value;
                                   setFormData({...formData, images: newImgs});
                                 }}
-                                className="w-full border-2 border-gray-100 p-3 font-medium text-[10px] outline-none focus:border-black transition-all bg-white"
+                                className="w-full bg-white border border-black/10 py-5 pl-12 pr-6 text-center text-[10px] font-black tracking-widest outline-none focus:border-[#C5A059] transition-all uppercase"
                               />
                             </div>
                           </div>
 
-                          {idx > 0 && (
-                            <button type="button" onClick={() => {
-                              const newImgs = formData.images?.filter((_, i) => i !== idx);
-                              setFormData({...formData, images: newImgs});
-                            }} className="p-2 bg-white hover:bg-red-50 text-red-500 border border-gray-100 transition-colors">
-                              <X className="w-4 h-4" />
-                            </button>
+                          <div className="flex flex-col items-center justify-center space-y-6 text-center">
+                            <span className="text-[8px] font-black uppercase tracking-[0.4em] text-black/20 text-center uppercase">OR UPLOAD FROM MOBILE</span>
+                            <div className="relative text-center">
+                              <input 
+                                type="file" 
+                                accept="image/*"
+                                onChange={(e) => handleImageUpload(e, idx)}
+                                className="hidden"
+                                id={`file-${idx}`}
+                              />
+                              <label 
+                                htmlFor={`file-${idx}`}
+                                className={`flex items-center justify-center px-10 py-4 border-2 border-black text-[9px] font-black uppercase tracking-[0.3em] cursor-pointer hover:bg-black hover:text-white transition-all ${uploadingImageIndex === idx ? 'opacity-50' : ''}`}
+                              >
+                                {uploadingImageIndex === idx ? 'Uploading...' : 'Choose File'}
+                              </label>
+                            </div>
+                          </div>
+
+                          {img && (
+                            <div className="flex flex-col items-center space-y-4 pt-4 text-center">
+                              <div className="w-24 aspect-[3/4] overflow-hidden border-2 border-white shadow-2xl">
+                                <img src={img} className="w-full h-full object-cover grayscale" alt="Preview" />
+                              </div>
+                              <div className="flex items-center space-x-2 text-[#C5A059] justify-center">
+                                <Check className="w-3 h-3" />
+                                <span className="text-[8px] font-black uppercase tracking-widest uppercase">Asset Ready</span>
+                              </div>
+                            </div>
                           )}
                         </div>
+                      ))}
+                    </div>
+                  </div>
 
-                        {img && (
-                          <div className="relative group w-32 aspect-[3/4] border-2 border-gray-100 p-1 bg-white">
-                            <img src={img} alt="Preview" className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all" />
-                            <div className="absolute top-2 right-2 bg-black text-white text-[8px] px-2 py-1 font-black uppercase">Active</div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    {(formData.images?.length || 0) < 6 && (
-                      <button 
-                        type="button" 
-                        onClick={() => setFormData({...formData, images: [...(formData.images || []), '']})}
-                        className="w-full border-2 border-dashed border-gray-100 p-4 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:border-black hover:text-black transition-all flex items-center justify-center"
-                      >
-                        <Plus className="w-3 h-3 mr-2" /> Add Additional Image
-                      </button>
+                  <div className="flex flex-col items-center space-y-12 pt-16 border-t border-black/5 text-center">
+                    <div className="flex items-center justify-center space-x-4">
+                      <input 
+                        type="checkbox" 
+                        id="trending"
+                        checked={formData.isTrending}
+                        onChange={e => setFormData({...formData, isTrending: e.target.checked})}
+                        className="w-5 h-5 accent-[#C5A059]"
+                      />
+                      <label htmlFor="trending" className="text-[10px] font-black uppercase tracking-[0.4em] cursor-pointer uppercase">Highlight in Trending</label>
+                    </div>
+                    
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting || isSuccess}
+                      className={`w-full py-8 text-[12px] font-black uppercase tracking-[0.5em] transition-all duration-700 shadow-2xl disabled:opacity-80 flex items-center justify-center ${isSuccess ? 'bg-green-600 text-white' : 'bg-black text-white hover:bg-[#C5A059] hover:text-black'}`}
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center justify-center space-x-4">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span className="uppercase">Establishing Cloud Sync...</span>
+                        </div>
+                      ) : isSuccess ? (
+                        <div className="flex items-center justify-center space-x-4 text-center">
+                          <Check className="w-5 h-5" />
+                          <span className="uppercase">SUCCESSFULLY LIVE</span>
+                        </div>
+                      ) : (
+                        <span className="uppercase">{editingId ? 'Push Final Updates' : 'Publish to Storefront'}</span>
+                      )}
+                    </button>
+                    {isSubmitting && (
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#C5A059] animate-pulse uppercase">Waiting for Server Confirmation...</p>
                     )}
                   </div>
                 </div>
-
-                <div className="flex items-center space-x-4">
-                  <input 
-                    type="checkbox" 
-                    id="isTrending"
-                    checked={formData.isTrending}
-                    onChange={e => setFormData({...formData, isTrending: e.target.checked})}
-                    className="w-5 h-5 accent-pink-600"
-                  />
-                  <label htmlFor="isTrending" className="text-[10px] font-black uppercase tracking-widest cursor-pointer">Set as Trending</label>
-                </div>
-
-                <div className="pt-8">
-                  <button 
-                    type="submit" 
-                    className="luxury-button w-full py-6 flex items-center justify-center text-[11px]"
-                  >
-                    {editingId ? 'Save Changes' : 'Add to Catalog'}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

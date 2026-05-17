@@ -1,143 +1,109 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Heart, ShoppingBag, Star, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Heart, Plus, ShoppingBag } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../lib/utils';
 import { motion } from 'motion/react';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import toast from 'react-hot-toast';
 
 interface ProductCardProps {
   product: Product;
-  key?: string | number;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
-  const { user, customer } = useAuth();
-  const navigate = useNavigate();
+  const { user, isInWishlist, toggleWishlist } = useAuth();
 
-  const isWishlisted = customer?.wishlist?.includes(product.id);
+  const isWishlisted = isInWishlist(product.id);
 
-  const toggleWishlist = async (e: React.MouseEvent) => {
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
     if (!user) {
-      toast.error('Please login to wishlist products');
+      toast.error('Please login to save favorites');
       return;
     }
-
-    const customerRef = doc(db, 'customers', user.uid);
-    try {
-      if (isWishlisted) {
-        await updateDoc(customerRef, {
-          wishlist: arrayRemove(product.id)
-        });
-        toast.success('Removed from wishlist');
-      } else {
-        await updateDoc(customerRef, {
-          wishlist: arrayUnion(product.id)
-        });
-        toast.success('Added to wishlist');
-      }
-    } catch (error) {
-      toast.error('Failed to update wishlist');
-    }
+    await toggleWishlist(product.id);
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Default to the first size for quick add
-    addToCart(product, product.sizes?.[0] || 'O/S');
-    toast.success('Archive updated');
+    addToCart(product, 1, product.sizes?.[0] || 'O/S');
+    toast.success('Added to Archive');
   };
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="group relative bg-transparent"
+      className="group relative"
     >
       <Link to={`/product/${product.id}`} className="block">
-        {/* Image Container */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-brand-beige/20">
+        {/* Image Display */}
+        <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
           <img 
             src={product.images[0]} 
             alt={product.name} 
-            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[2s] ease-out grayscale-[0.2] group-hover:grayscale-0"
+            className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[1.5s] ease-out"
           />
           
-          {/* Wishlist Button - Minimal */}
+          {/* Discount Badge */}
+          {product.discountPercentage > 0 && (
+            <div className="absolute top-0 left-0 bg-brand-black text-white px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.2em] z-10">
+              -{product.discountPercentage}%
+            </div>
+          )}
+
+          {/* Luxury Overlay UI */}
+          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          {/* Wishlist Button */}
           <button 
-            onClick={toggleWishlist}
-            className={`absolute top-6 right-6 p-2 transition-all duration-300 active:scale-90 z-20
-              ${isWishlisted ? 'text-brand-black opacity-100' : 'text-brand-black/20 hover:text-brand-black opacity-0 group-hover:opacity-100'}`}
+            onClick={handleToggleWishlist}
+            className="absolute top-4 right-4 p-3 bg-white/80 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-10px] group-hover:translate-y-0 z-20"
           >
-            <Heart className={`w-[18px] h-[18px] ${isWishlisted ? 'fill-current text-red-500' : ''}`} />
+            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-brand-black'}`} />
           </button>
 
-          {/* Luxury Hover Quick Add */}
-          <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out bg-white/10 backdrop-blur-xl border-t border-white/20 hidden lg:block z-10">
-            <button 
-              onClick={handleAddToCart}
-              className="w-full py-4 bg-brand-black text-white text-[9px] font-semibold tracking-[0.2em] uppercase transition-all duration-500 hover:bg-brand-gold active:scale-[0.98]"
-            >
-              Add to archive
-            </button>
-          </div>
+          {/* Quick Add Button */}
+          <button 
+            onClick={handleQuickAdd}
+            className="absolute bottom-6 inset-x-6 py-4 bg-white/95 backdrop-blur-sm text-brand-black text-[10px] font-black uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-[20px] group-hover:translate-y-0 flex items-center justify-center space-x-3 hover:bg-brand-black hover:text-white z-20"
+          >
+            <Plus className="w-3 h-3" />
+            <span>Quick Archive</span>
+          </button>
         </div>
 
-        {/* Info - Elevated Typography Centered */}
-        <div className="mt-8 space-y-4 text-center px-2">
-          <div className="flex items-center justify-center space-x-3">
-             <motion.h3 
-              className="text-[9px] uppercase tracking-[0.4em] text-brand-black/30 font-black"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-             >
-               {product.category}
-             </motion.h3>
-            {product.discountPercentage > 0 && (
-              <span className="w-1 h-1 rounded-full bg-brand-gold" />
-            )}
-            {product.discountPercentage > 0 && (
-              <span className="text-[9px] font-black text-brand-gold uppercase tracking-[0.2em]">Seasonal Sale</span>
-            )}
+        {/* Product Metadata */}
+        <div className="mt-8 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-brand-gold">
+              {product.category}
+            </span>
+            <div className="h-[1px] flex-grow mx-4 bg-gray-100" />
           </div>
-          <h2 className="text-xl font-display font-medium tracking-tight text-brand-black leading-tight line-clamp-1">{product.name}</h2>
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center space-x-4">
-              <span className="text-lg font-black text-brand-black tracking-tight">{formatCurrency(product.salePrice)}</span>
-              {product.salePrice < product.price && (
-                <span className="text-xs text-brand-black/20 line-through tracking-tight font-mono">{formatCurrency(product.price)}</span>
-              )}
-            </div>
-            {product.discountPercentage > 0 && (
-              <span className="text-[9px] font-black text-brand-gold/60 uppercase tracking-[0.3em]">
-                {product.discountPercentage}% Final Reductions
+          
+          <h3 className="text-sm font-display font-medium uppercase tracking-tight text-brand-black group-hover:italic transition-all">
+            {product.name}
+          </h3>
+
+          <div className="flex items-center space-x-4">
+            <span className="text-sm font-black text-brand-black tracking-tight">
+              {formatCurrency(product.salePrice)}
+            </span>
+            {product.price > product.salePrice && (
+              <span className="text-xs text-brand-black/30 line-through font-light tracking-tight">
+                {formatCurrency(product.price)}
               </span>
             )}
           </div>
         </div>
       </Link>
-      
-      {/* Mobile Actions - Simplified */}
-      <div className="flex lg:hidden mt-6 border-t border-brand-black/5 pt-4">
-        <button 
-          onClick={handleAddToCart}
-          className="w-full text-[9px] font-bold tracking-[0.3em] uppercase text-brand-black flex items-center justify-center space-x-3 group/mobile"
-        >
-          <span>Quick Archive</span>
-          <ArrowRight className="w-3 h-3 transition-transform group-hover/mobile:translate-x-1" />
-        </button>
-      </div>
     </motion.div>
   );
 }

@@ -46,7 +46,7 @@ export default function Wishlist() {
         <p className="text-gray-500 mb-12 max-w-xs font-medium">Please login to save and view your favorite styles.</p>
         <button 
           onClick={() => window.location.reload()} // Auth context will handle login
-          className="bg-black text-white px-10 py-4 font-bold uppercase tracking-widest text-xs"
+          className="bg-red-600 text-white px-10 py-4 font-bold uppercase tracking-widest text-xs"
         >
           Login Now
         </button>
