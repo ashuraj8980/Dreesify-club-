@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { Product } from '../types';
 import { db } from '../lib/firebase';
 import ProductCard from '../components/ProductCard';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { motion } from 'motion/react';
+import { ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,15 +14,21 @@ export default function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'products'));
+        const q = query(
+          collection(db, 'products'),
+          orderBy('createdAt', 'desc'),
+          limit(12)
+        );
+        const querySnapshot = await getDocs(q);
         const productsData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         } as Product));
         
+        // Final client-side safety filter for requested categories
         setProducts(productsData.filter(p => p.category === 'Women' || p.category === 'Accessories'));
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching archive:', error);
       } finally {
         setLoading(false);
       }
@@ -32,188 +38,117 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="space-y-24 md:space-y-40 pb-24 md:pb-40">
-      {/* Trending Pieces */}
-      <section className="container mx-auto px-4 lg:px-12">
-        <header className="flex flex-col items-center text-center space-y-8 mb-32 border-b border-brand-black/10 pb-20">
-          <div className="space-y-4">
-            <span className="text-[10px] uppercase tracking-[0.6em] font-black text-brand-gold block">New Season</span>
-            <h2 className="fluid-display-lg font-display font-medium uppercase">Trending Now</h2>
+    <div className="space-y-32 md:space-y-48 pb-32 md:pb-48">
+      {/* Hero Section - Fashion Editorial Style */}
+      <section className="relative h-[90vh] md:h-screen overflow-hidden flex items-center bg-brand-black">
+        <div className="absolute inset-0 z-0">
+          <motion.img 
+            initial={{ scale: 1.1, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.6 }}
+            transition={{ duration: 2, ease: [0.19, 1, 0.22, 1] }}
+            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000&auto=format&fit=crop" 
+            alt="Editorial" 
+            className="w-full h-full object-cover grayscale brightness-75"
+          />
+        </div>
+        
+        <div className="container mx-auto px-4 lg:px-12 relative z-10 text-white">
+          <div className="max-w-5xl">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="space-y-8 md:space-y-12"
+            >
+              <div className="overflow-hidden">
+                <span className="font-display uppercase tracking-[0.6em] text-[10px] md:text-xs block text-brand-gold">
+                   Volume One // The Archive Edition
+                </span>
+              </div>
+              
+              <h1 className="text-7xl md:text-[12rem] font-display font-medium leading-[0.85] tracking-tighter uppercase">
+                 Ethereal <br />
+                 <span className="italic font-serif lowercase text-brand-beige ml-12 md:ml-32">Form.</span>
+              </h1>
+              
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-12 mt-12">
+                 <p className="text-lg md:text-xl text-brand-beige/60 font-serif italic max-w-md leading-relaxed">
+                   "A curation of architectural silhouettes and visceral textiles, defined by the poetry of the self."
+                 </p>
+                 <Link to="/category/women" className="luxury-button !px-16 py-6 group">
+                   The Collection <ArrowRight className="inline-block ml-4 w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                 </Link>
+              </div>
+            </motion.div>
           </div>
-          <p className="text-brand-black/40 font-serif italic text-lg max-w-lg">Selected pieces from our latest collection, curated for quality and timeless style.</p>
-          <Link to="/search" className="nav-link !text-[12px] underline underline-offset-8">Browse All Products</Link>
+        </div>
+        
+        <div className="absolute bottom-12 right-12 hidden lg:flex flex-col items-center space-y-6">
+          <div className="w-px h-32 bg-gradient-to-b from-transparent via-brand-gold to-transparent" />
+          <span className="text-[8px] uppercase tracking-[0.5em] font-black text-brand-gold vertical-text rotate-180">Curated Series</span>
+        </div>
+      </section>
+
+      {/* Product Display Section */}
+      <section className="container mx-auto px-4 lg:px-12">
+        <header className="flex flex-col items-center text-center space-y-10 mb-24 md:mb-40">
+          <div className="space-y-4">
+            <span className="text-[10px] uppercase tracking-[0.8em] font-black text-brand-gold block">New Acquisitions</span>
+            <h2 className="text-5xl md:text-8xl font-display font-medium uppercase tracking-tight">The Registry</h2>
+          </div>
+          <p className="text-brand-black/40 font-serif italic text-xl max-w-2xl leading-relaxed">
+            Discover pieces distilled to their absolute necessity, representing the intersection of modern geometry and ethical craftsmanship.
+          </p>
         </header>
         
         {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-32">
-            {[1, 2, 3, 4, 5, 6].map(i => (
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-24">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
               <div key={i} className="animate-pulse space-y-8">
-                <div className="aspect-[3/4] bg-brand-beige/20" />
-                <div className="h-6 bg-brand-beige/20 w-3/4" />
-                <div className="h-4 bg-brand-beige/10 w-1/4" />
+                <div className="aspect-[3/4] bg-brand-beige/10" />
+                <div className="h-4 bg-brand-beige/20 w-3/4" />
+                <div className="h-3 bg-brand-beige/10 w-1/4" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-32">
+          <div>
             {products.length > 0 ? (
-              products.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-24 md:gap-y-32">
+                {products.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
             ) : (
-              <div className="col-span-full py-60 text-center border-y border-brand-black/5">
-                <p className="font-serif italic text-3xl text-brand-black/20 mb-12 uppercase tracking-widest">The archive is currently void.</p>
-                <InitializeButton />
+              <div className="py-48 text-center border-y border-brand-black/5 flex flex-col items-center justify-center space-y-8">
+                <div className="w-20 h-px bg-brand-gold" />
+                <p className="font-serif italic text-3xl text-brand-black/20 uppercase tracking-[0.2em]">Collection Under Curation</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-brand-black/40">The archive is being updated with new acquisitions.</p>
+                <div className="w-20 h-px bg-brand-gold" />
               </div>
             )}
           </div>
         )}
       </section>
-    </div>
-  );
-}
 
-function InitializeButton() {
-  const [seeding, setSeeding] = useState(false);
-  const { isAdmin } = useAuth();
-
-  const seedData = async () => {
-    setSeeding(true);
-    try {
-      const { addDoc, collection } = await import('firebase/firestore');
-      const products = [
-        {
-          name: "Architectural Wool Overcoat",
-          description: "A masterclass in minimalism. Structured silhouette crafted from 100% fine double-faced Merino wool. Designed for a razor-sharp yet relaxed archival fit.",
-          price: 45000,
-          salePrice: 45000,
-          discountPercentage: 0,
-          images: ["https://images.unsplash.com/photo-1539109136881-3be0610931c3?q=80&w=2000&auto=format&fit=crop"],
-          category: "Women",
-          subcategory: "Outerwear",
-          sizes: ["XS", "S", "M", "L"],
-          colors: ["Oatmeal", "Obsidian"],
-          stock: 12,
-          rating: 4.9,
-          reviewCount: 24,
-          isTrending: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        },
-        {
-          name: "Fluid Silk Bias-Cut Slip",
-          description: "Effortless identity. Cut on the bias to drape with liquid grace, crafted from 30 momme mulberry silk. The ultimate evening archive piece.",
-          price: 18500,
-          salePrice: 18500,
-          discountPercentage: 0,
-          images: ["https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=2000&auto=format&fit=crop"],
-          category: "Women",
-          subcategory: "Dresses",
-          sizes: ["S", "M", "L"],
-          colors: ["Midnight", "Champagne"],
-          stock: 25,
-          rating: 4.8,
-          reviewCount: 56,
-          isTrending: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        },
-        {
-          name: "Geometric Nappa Leather Tote",
-          description: "Minimalist geometry in vegetable-tanned Italian Nappa leather. Seamless construction for a clean aesthetic. An object of pure utility.",
-          price: 22000,
-          salePrice: 22000,
-          discountPercentage: 0,
-          images: ["https://images.unsplash.com/photo-1584917469274-96ce157ad5ef?q=80&w=2000&auto=format&fit=crop"],
-          category: "Accessories",
-          subcategory: "Bags",
-          sizes: ["One Size"],
-          colors: ["Tan", "Black"],
-          stock: 8,
-          rating: 5.0,
-          reviewCount: 12,
-          isTrending: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        },
-        {
-          name: "Heavyweight Sculpted Midi Dress",
-          description: "Architectural silhouette in heavyweight matte ponte knit. A study in modern geometry and restraint. Designed for presence.",
-          price: 15980,
-          salePrice: 7990,
-          discountPercentage: 50,
-          images: ["https://images.unsplash.com/photo-1539109132374-34fa4563a86b?q=80&w=1974&auto=format&fit=crop"],
-          category: "Women",
-          subcategory: "Dresses",
-          sizes: ["S", "M", "L"],
-          stock: 25,
-          rating: 4.9,
-          reviewCount: 231,
-          isTrending: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        },
-        {
-          name: "Satin Asymmetrical Top",
-          description: "High-shine satin with a unique architectural drape. Perfect for layering within the modern archive.",
-          price: 8900,
-          salePrice: 8900,
-          discountPercentage: 0,
-          images: ["https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1920&auto=format&fit=crop"],
-          category: "Women",
-          subcategory: "Tops",
-          sizes: ["XS", "S", "M", "L"],
-          colors: ["Ivory", "Midnight"],
-          stock: 30,
-          rating: 4.8,
-          reviewCount: 42,
-          isTrending: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        },
-        {
-          name: "Fine Knit Mohair Cardigan",
-          description: "Ethereal weight with exceptional warmth. A study in texture and transparency.",
-          price: 14500,
-          salePrice: 14500,
-          discountPercentage: 0,
-          images: ["https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=2005&auto=format&fit=crop"],
-          category: "Women",
-          subcategory: "Knitwear",
-          sizes: ["S", "M", "L"],
-          colors: ["Cloud", "Soot"],
-          stock: 18,
-          rating: 4.9,
-          reviewCount: 29,
-          isTrending: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }
-      ];
-
-      for (const p of products) {
-        await addDoc(collection(db, 'products'), p);
-      }
-      toast.success('Archive initialized successfully!');
-      window.location.reload();
-    } catch (err) {
-      toast.error('Seeding failed');
-      console.error(err);
-    } finally {
-      setSeeding(false);
-    }
-  };
-
-  return (
-    <div className="flex flex-col items-center gap-6">
-      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-black/20">System Administration</p>
-      <button 
-        onClick={seedData} 
-        disabled={seeding}
-        className="luxury-button !bg-brand-gold !text-brand-black hover:!bg-brand-black hover:!text-white"
-      >
-        {seeding ? 'Syncing Archive...' : 'Initialize Foundation Data'}
-      </button>
+      {/* Brand Ethos Footer Callout */}
+      <section className="container mx-auto px-4 lg:px-24">
+        <div className="bg-brand-black text-white p-12 md:p-32 relative overflow-hidden">
+          <div className="relative z-10 max-w-3xl space-y-12">
+            <h3 className="text-4xl md:text-7xl font-display uppercase tracking-tight leading-tight">
+              Crafted for the <br />
+              <span className="italic font-serif lowercase text-brand-gold">Conscious</span> individual.
+            </h3>
+            <p className="text-brand-beige/60 text-lg md:text-xl font-serif italic leading-relaxed">
+              Every piece in our collection is a testament to the beauty of restraint, collaborating with heritage mills to ensure your wardrobe is a permanent archive of exceptional design.
+            </p>
+            <Link to="/search" className="inline-block text-[10px] font-black uppercase tracking-[0.4em] border-b border-brand-gold pb-2 text-brand-gold hover:text-white hover:border-white transition-all">
+              Explore All Objects
+            </Link>
+          </div>
+          <span className="absolute -right-20 -bottom-20 text-[25rem] font-display font-black text-white/5 select-none pointer-events-none">D.</span>
+        </div>
+      </section>
     </div>
   );
 }
