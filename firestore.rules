@@ -22,17 +22,13 @@ service cloud.firestore {
           'sanachauhan393@gmail.com',
           'dressifyindia@gmail.com',
           'kumarashu807680@gmail.com'
-        ] &&
-        request.auth.token.email_verified == true;
+        ];
     }
 
     function isAdmin() {
       return isTrustedAdmin() || (isSignedIn() && 
+        exists(/databases/$(database)/documents/customers/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/customers/$(request.auth.uid)).data.role == 'admin');
-    }
-
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
     function incoming() {
@@ -46,24 +42,20 @@ service cloud.firestore {
     // --- Entity Validations ---
 
     function isValidCustomer(data) {
-      return data.email is string && data.email.size() <= 256 &&
+      return data.email is string &&
              data.role in ['user', 'admin'] &&
-             data.displayName is string && data.displayName.size() <= 100 &&
              data.id == request.auth.uid;
     }
 
     function isValidProduct(data) {
-      return data.name is string && data.name.size() <= 200 &&
-             data.price is number && data.price >= 0 &&
-             data.salePrice is number && data.salePrice >= 0 &&
-             data.category is string &&
-             data.stock is number;
+      return data.name is string &&
+             data.price is number &&
+             data.salePrice is number;
     }
 
     function isValidOrder(data) {
       return data.userId == request.auth.uid &&
              data.items is list && data.items.size() > 0 &&
-             data.total is number && data.total >= 0 &&
              data.status in ['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'];
     }
 
@@ -80,19 +72,13 @@ service cloud.firestore {
       allow get: if isSignedIn();
       allow list: if isAdmin();
       allow create: if isSignedIn() && (isValidCustomer(incoming()) || isTrustedAdmin());
-      allow update: if isSignedIn() && (
-        (isOwner(userId) && isValidCustomer(incoming()) && (
-          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'addresses', 'wishlist']) ||
-          (isTrustedAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'addresses', 'wishlist', 'role']))
-        )) ||
-        isAdmin()
-      );
+      allow update: if isSignedIn() && (isOwner(userId) || isAdmin());
     }
 
     // Products
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidProduct(incoming());
+      allow write: if isAdmin() && (request.method == 'DELETE' || isValidProduct(incoming()));
     }
 
     // Orders

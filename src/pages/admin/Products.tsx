@@ -69,13 +69,15 @@ export default function AdminProducts() {
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      const newImgs = [...(formData.images || [])];
-      newImgs[index] = downloadURL;
-      setFormData(prev => ({ ...prev, images: newImgs }));
+      setFormData(prev => {
+        const newImgs = [...(prev.images || [])];
+        newImgs[index] = downloadURL;
+        return { ...prev, images: newImgs };
+      });
       toast.success('Image uploaded successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload image');
+      toast.error(`Upload failed: ${error.message}`);
     } finally {
       setUploadingImageIndex(null);
     }
@@ -106,8 +108,23 @@ export default function AdminProducts() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || formData.price === undefined || formData.salePrice === undefined) {
-      toast.error('Please fill required fields');
+    
+    const validImages = formData.images?.filter(img => img.trim() !== '') || [];
+    
+    if (!formData.name?.trim()) {
+      toast.error('Product name is required');
+      return;
+    }
+    if (formData.price === undefined || formData.price < 0) {
+      toast.error('Valid regular price is required');
+      return;
+    }
+    if (formData.salePrice === undefined || formData.salePrice < 0) {
+      toast.error('Valid sale price is required');
+      return;
+    }
+    if (validImages.length === 0) {
+      toast.error('At least one product image is required');
       return;
     }
 
@@ -118,11 +135,18 @@ export default function AdminProducts() {
       : 0;
 
     const productData = {
-      ...formData,
+      name: formData.name.trim(),
+      description: formData.description?.trim() || '',
       price,
       salePrice,
       discountPercentage,
-      images: formData.images?.filter(img => img.trim() !== '') || [],
+      category: formData.category || 'Women',
+      subcategory: formData.subcategory || '',
+      sizes: formData.sizes || [],
+      colors: formData.colors || [],
+      images: validImages,
+      stock: Number(formData.stock) || 0,
+      isTrending: !!formData.isTrending,
       updatedAt: Date.now()
     };
 
@@ -142,9 +166,9 @@ export default function AdminProducts() {
       setIsModalOpen(false);
       resetForm();
       await fetchProducts();
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast.error('Operation failed');
+    } catch (error: any) {
+      console.error('Submit error details:', error);
+      toast.error(`Operation failed: ${error.message || 'Unknown database error'}`);
     }
   };
 
@@ -165,7 +189,10 @@ export default function AdminProducts() {
   };
 
   const handleEdit = (product: Product) => {
-    setFormData(product);
+    setFormData({
+      ...product,
+      images: product.images.length > 0 ? product.images : ['']
+    });
     setEditingId(product.id);
     setIsModalOpen(true);
   };
@@ -176,8 +203,8 @@ export default function AdminProducts() {
         await deleteDoc(doc(db, 'products', id));
         toast.success('Style removed');
         await fetchProducts();
-      } catch (error) {
-        toast.error('Deletion failed');
+      } catch (error: any) {
+        toast.error(`Deletion failed: ${error.message}`);
       }
     }
   };
@@ -406,9 +433,11 @@ export default function AdminProducts() {
                                 value={img}
                                 placeholder="https://external-archive.com/..."
                                 onChange={e => {
-                                  const newImgs = [...(formData.images || [])];
-                                  newImgs[idx] = e.target.value;
-                                  setFormData({...formData, images: newImgs});
+                                  setFormData(prev => {
+                                    const newImgs = [...(prev.images || [])];
+                                    newImgs[idx] = e.target.value;
+                                    return { ...prev, images: newImgs };
+                                  });
                                 }}
                                 className="w-full border-2 border-gray-100 p-3 font-medium text-[10px] outline-none focus:border-black transition-all bg-white"
                               />
@@ -417,8 +446,10 @@ export default function AdminProducts() {
 
                           {idx > 0 && (
                             <button type="button" onClick={() => {
-                              const newImgs = formData.images?.filter((_, i) => i !== idx);
-                              setFormData({...formData, images: newImgs});
+                              setFormData(prev => {
+                                const newImgs = prev.images?.filter((_, i) => i !== idx);
+                                return { ...prev, images: newImgs };
+                              });
                             }} className="p-2 bg-white hover:bg-red-50 text-red-500 border border-gray-100 transition-colors">
                               <X className="w-4 h-4" />
                             </button>
@@ -436,7 +467,7 @@ export default function AdminProducts() {
                     {(formData.images?.length || 0) < 6 && (
                       <button 
                         type="button" 
-                        onClick={() => setFormData({...formData, images: [...(formData.images || []), '']})}
+                        onClick={() => setFormData(prev => ({ ...prev, images: [...(prev.images || []), ''] }))}
                         className="w-full border-2 border-dashed border-gray-100 p-4 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:border-black hover:text-black transition-all flex items-center justify-center"
                       >
                         <Plus className="w-3 h-3 mr-2" /> Add Additional Image
