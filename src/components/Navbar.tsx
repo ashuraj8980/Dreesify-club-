@@ -21,9 +21,8 @@ export default function Navbar() {
   };
 
   const navLinks = [
+    { name: 'Home', href: '/' },
     { name: 'Women', href: '/category/women' },
-    { name: 'Men', href: '/category/men' },
-    { name: 'Kids', href: '/category/kids' },
     { name: 'Accessories', href: '/category/accessories' },
   ];
 

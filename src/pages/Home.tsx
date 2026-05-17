@@ -3,14 +3,12 @@ import { collection, getDocs } from 'firebase/firestore';
 import { Product } from '../types';
 import { db } from '../lib/firebase';
 import ProductCard from '../components/ProductCard';
-import { ArrowRight, Truck, ShieldCheck, RefreshCw, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function Home() {
-  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,10 +18,9 @@ export default function Home() {
         const productsData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
-        } as Product)).filter(p => p.isTrending).slice(0, 6);
+        } as Product));
         
-        // If no products, we'll show empty or fallback
-        setTrendingProducts(productsData);
+        setProducts(productsData.filter(p => p.category === 'Women' || p.category === 'Accessories'));
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
@@ -34,170 +31,8 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  const categories = [
-    { name: 'The Women\'s Archive', image: 'https://images.unsplash.com/photo-1549439602-43ebca2327af?q=80&w=2070&auto=format&fit=crop', link: '/category/women' },
-    { name: 'Curated for Him', image: 'https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?q=80&w=2070&auto=format&fit=crop', link: '/category/men' },
-    { name: 'The Junior Edit', image: 'https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?q=80&w=2072&auto=format&fit=crop', link: '/category/kids' },
-    { name: 'Modern Objets', image: 'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=2070&auto=format&fit=crop', link: '/category/accessories' },
-  ];
-
   return (
     <div className="space-y-24 md:space-y-40 pb-24 md:pb-40">
-      {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden flex items-center bg-brand-black">
-        <div className="absolute inset-0 z-0">
-          <motion.img 
-            initial={{ scale: 1.15, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.5 }}
-            transition={{ duration: 2.5, ease: [0.19, 1, 0.22, 1] }}
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop" 
-            alt="Hero" 
-            className="w-full h-full object-cover grayscale brightness-75"
-          />
-        </div>
-        
-        <div className="container mx-auto px-4 lg:px-12 relative z-10 text-white text-center">
-          <div className="max-w-4xl mx-auto flex flex-col items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, delay: 0.8, ease: [0.19, 1, 0.22, 1] }}
-              className="flex flex-col items-center w-full"
-            >
-              <div className="overflow-hidden mb-8">
-                <motion.span 
-                   initial={{ y: '100%' }}
-                   animate={{ y: 0 }}
-                   transition={{ duration: 0.8, delay: 1.2 }}
-                   className="font-display uppercase tracking-[0.8em] text-[10px] block text-brand-gold"
-                >
-                   Étude Series // Collection ‘26
-                </motion.span>
-              </div>
-              
-              <h1 className="fluid-display-xl font-display font-medium mb-12 tracking-[-0.05em] text-center">
-                 POETRY <br />
-                 <span className="italic font-serif lowercase tracking-tight text-brand-beige">of the self.</span>
-              </h1>
-              
-              <div className="flex flex-col items-center justify-center gap-12 mt-12 w-full max-w-lg mx-auto">
-                 <div className="text-center">
-                   <p className="text-lg md:text-xl text-brand-beige/60 font-light tracking-wide leading-relaxed italic font-serif">
-                     "Dressify explores the intersection of architectural geometry and the visceral experience of textile."
-                   </p>
-                 </div>
-                 <div className="flex flex-wrap justify-center gap-8">
-                   <Link to="/category/women" className="luxury-button !px-12 md:!px-16">
-                     The Collection
-                   </Link>
-                   <Link to="/category/men" className="luxury-button-outline !px-12 md:!px-16 !border-white/40 !text-white hover:!bg-white hover:!text-brand-black">
-                     Curated Pieces
-                   </Link>
-                 </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-        
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-12 right-12 hidden lg:flex flex-col items-center space-y-6">
-          <div className="w-px h-32 bg-gradient-to-b from-transparent via-brand-gold to-transparent" />
-          <span className="text-[8px] uppercase tracking-[0.5em] font-black text-brand-gold vertical-text rotate-180">Sequence One</span>
-        </div>
-      </section>
-
-      {/* Narrative Section */}
-      <section className="container mx-auto px-4 lg:px-24">
-        <div className="flex flex-col lg:flex-row gap-8 md:gap-32 items-center">
-          <div className="lg:w-1/2 relative w-full">
-             <motion.div 
-               initial={{ opacity: 0, x: -50 }}
-               whileInView={{ opacity: 1, x: 0 }}
-               transition={{ duration: 1.2 }}
-               className="aspect-[4/5] overflow-hidden grayscale group border-4 border-brand-black shadow-2xl"
-             >
-                <img 
-                  src="https://images.unsplash.com/photo-1539109136881-3be0610931c3?q=80&w=1000&auto=format&fit=crop" 
-                  alt="Editorial" 
-                  className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
-                />
-             </motion.div>
-             <div className="absolute -bottom-12 -right-12 w-1/2 aspect-square border-4 border-brand-black bg-brand-cream p-12 hidden lg:block shadow-2xl">
-                <span className="text-brand-black text-[10px] font-black uppercase tracking-[0.6em] mb-4 block">Note 01</span>
-                <p className="text-[13px] font-black uppercase tracking-[0.2em] leading-loose text-brand-black">
-                  "Sustainable practice is not a choice, it is our unwavering commitment to the future of craftsmanship."
-                </p>
-             </div>
-          </div>
-          <div className="lg:w-1/2 space-y-12 text-center lg:text-left">
-            <span className="text-[12px] uppercase tracking-[0.5em] font-black text-brand-blue bg-brand-blue/5 px-4 py-2 border-2 border-brand-blue">Epilogue</span>
-            <h2 className="text-6xl md:text-8xl font-display font-black uppercase">Quiet <br /> Power</h2>
-            <div className="space-y-10 max-w-sm mx-auto lg:mx-0">
-               <p className="text-xl text-brand-black font-serif italic leading-relaxed">The Archive represents a collection of essential forms, distilled to their absolute necessity.</p>
-               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-10">
-                 <Link to="/category/women" className="luxury-button w-full md:w-auto text-center !bg-brand-black !text-white hover:!bg-brand-yellow hover:!text-brand-black">The Women</Link>
-                 <Link to="/category/men" className="text-[13px] font-black uppercase tracking-[0.4em] hover:text-brand-blue underline underline-offset-8 transition-all">View Men</Link>
-               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Collections Grid */}
-      <section className="py-12 md:py-20 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
-           {/* Women Featured */}
-           <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="h-[80vh] relative group overflow-hidden border-r-2 border-brand-black"
-           >
-              <img 
-                src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=1200&auto=format&fit=crop" 
-                alt="Women Feature" 
-                className="w-full h-full object-cover grayscale transition-transform duration-[4s] group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-brand-black/40 group-hover:bg-brand-black/20 transition-all duration-1000" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
-                <motion.span 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  className="text-brand-yellow text-[12px] font-black uppercase tracking-[0.8em] mb-6 block"
-                >
-                  Nuance
-                </motion.span>
-                <h3 className="text-6xl md:text-9xl text-white font-display font-black uppercase tracking-tight mb-12">Feminine <br /> <span className="italic font-serif lowercase text-brand-cream">Structure</span></h3>
-                <Link to="/category/women" className="luxury-button !bg-white !text-brand-black hover:!bg-brand-yellow">Discover Women</Link>
-              </div>
-           </motion.div>
-
-           {/* Men Featured */}
-           <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="h-[80vh] relative group overflow-hidden"
-           >
-              <img 
-                src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1200&auto=format&fit=crop" 
-                alt="Men Feature" 
-                className="w-full h-full object-cover grayscale transition-transform duration-[4s] group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-brand-black/40 group-hover:bg-brand-black/20 transition-all duration-1000" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-12">
-                <motion.span 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  className="text-brand-green text-[12px] font-black uppercase tracking-[0.8em] mb-6 block"
-                >
-                  Distinction
-                </motion.span>
-                <h3 className="text-6xl md:text-9xl text-white font-display font-black uppercase tracking-tight mb-12">Masculine <br /> <span className="italic font-serif lowercase text-brand-cream">Form</span></h3>
-                <Link to="/category/men" className="luxury-button !bg-white !text-brand-black hover:!bg-brand-green">Discover Men</Link>
-              </div>
-           </motion.div>
-        </div>
-      </section>
-
       {/* Trending Pieces */}
       <section className="container mx-auto px-4 lg:px-12">
         <header className="flex flex-col items-center text-center space-y-8 mb-32 border-b border-brand-black/10 pb-20">
@@ -221,8 +56,8 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-32">
-            {trendingProducts.length > 0 ? (
-              trendingProducts.map(product => (
+            {products.length > 0 ? (
+              products.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))
             ) : (
@@ -233,97 +68,6 @@ export default function Home() {
             )}
           </div>
         )}
-      </section>
-
-      {/* Philosophy Section */}
-      <section className="bg-brand-black text-white py-20 md:py-40 overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-1/3 h-full overflow-hidden opacity-30 select-none pointer-events-none hidden lg:block">
-           <span className="text-[20rem] font-display font-black leading-none opacity-10 absolute -right-20 top-1/2 -translate-y-1/2">D.</span>
-        </div>
-        <div className="container mx-auto px-4 lg:px-12 relative z-10">
-          <div className="max-w-3xl">
-            <h2 className="text-5xl md:text-7xl font-display mb-12 leading-tight tracking-tight">
-              Crafted for the <br />
-              <span className="italic font-serif lowercase text-brand-gold">Conscious</span> individual.
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-brand-beige/60 text-sm leading-relaxed">
-              <p>
-                Dressify is a contemporary fashion house built on the principles of architectural simplicity, ethical craftsmanship, and unwavering quality. Every piece in our collection is a testament to the beauty of restraint.
-              </p>
-              <p>
-                We collaborate with heritage mills and innovative craftsmen to ensure that your wardrobe is not just a collection of garments, but a permanent archive of exceptional design.
-              </p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 mt-32 border-t border-white/10 pt-20">
-            {[
-              { icon: <Truck className="w-6 h-6" />, title: 'GLOBAL DELIVERY', desc: 'Complimentary shipping on orders over ₹10,000' },
-              { icon: <ShieldCheck className="w-6 h-6" />, title: 'SECURE ARCHIVE', desc: 'Encrypted end-to-end commerce' },
-              { icon: <RefreshCw className="w-6 h-6" />, title: 'THE RETURN POLICY', desc: '30-day seamless exchange window' },
-              { icon: <Zap className="w-6 h-6" />, title: 'ARTISANAL QUALITY', desc: 'Rigorous 12-point quality inspection' },
-            ].map((feature, idx) => (
-              <div key={idx} className="space-y-4">
-                <div className="text-brand-gold/80">{feature.icon}</div>
-                <h4 className="font-semibold text-[10px] tracking-[0.2em]">{feature.title}</h4>
-                <p className="text-white/40 text-[10px] leading-relaxed tracking-wide uppercase">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Inquiries / Contact Section */}
-      <section className="container mx-auto px-4 lg:px-12 py-20 md:py-40 border-t border-brand-black/5">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center">
-           <div className="text-center lg:text-left">
-              <span className="text-brand-gold text-[10px] font-black uppercase tracking-[0.6em] mb-6 block">Contact</span>
-              <h2 className="text-5xl md:text-8xl font-display uppercase tracking-tight leading-none mb-12">Personal <br /> Support</h2>
-              <p className="text-brand-black/40 font-serif italic text-lg md:text-xl max-w-sm mx-auto lg:mx-0 leading-relaxed mb-12">
-                Our team is available to help you with size consultations, fit concerns, and order tracking.
-              </p>
-              <button 
-                onClick={() => {
-                  const el = document.getElementById('contact-reveal');
-                  if (el) el.innerText = 'support@dressify.in';
-                }}
-                className="luxury-button w-full md:w-auto"
-              >
-                Get In Touch
-              </button>
-           </div>
-           <div className="bg-brand-beige p-8 md:p-24 space-y-12">
-              <div className="space-y-4">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Digital Support</span>
-                 <p id="contact-reveal" className="text-3xl font-display tracking-tight text-brand-black/40 italic">Click to reveal details</p>
-              </div>
-              <div className="space-y-4">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-brand-black/20">Distribution</span>
-                 <p className="text-sm font-black uppercase tracking-[0.2em] leading-loose">
-                    Global Fulfillment <br />
-                    Pan-India Network
-                 </p>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Modern Newsletter Section */}
-      <section className="container mx-auto px-4 lg:px-12 py-20 bg-brand-beige/20 border-y border-brand-black/5">
-        <div className="max-w-2xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl font-display uppercase tracking-tight">Join The Collective</h2>
-          <p className="font-serif italic text-xl text-brand-black/60">
-            Be the first to experience our seasonal drops and exclusive artisanal collaborations.
-          </p>
-          <form className="flex border-b border-brand-black pb-2 pt-8" onSubmit={(e) => e.preventDefault()}>
-            <input 
-              type="email" 
-              placeholder="YOUR EMAIL" 
-              className="flex-grow bg-transparent px-2 py-4 outline-none text-xs font-semibold tracking-widest placeholder:text-brand-black/30"
-            />
-            <button className="uppercase text-[10px] tracking-widest font-black p-4 hover:translate-x-2 transition-transform">Subscribe</button>
-          </form>
-        </div>
       </section>
     </div>
   );
@@ -370,42 +114,6 @@ function InitializeButton() {
           stock: 25,
           rating: 4.8,
           reviewCount: 56,
-          isTrending: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        },
-        {
-          name: "Standard 2-Ply Cashmere Knit",
-          description: "The foundation of the modern uniform. Exceptionally soft 2-ply cashmere, sourced from sustainable Mongolian herders. A permanent piece for the refined individual.",
-          price: 12000,
-          salePrice: 12000,
-          discountPercentage: 0,
-          images: ["https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=2000&auto=format&fit=crop"],
-          category: "Men",
-          subcategory: "Knitwear",
-          sizes: ["S", "M", "L", "XL"],
-          colors: ["Grey Melange", "Navy"],
-          stock: 40,
-          rating: 4.7,
-          reviewCount: 38,
-          isTrending: true,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        },
-        {
-          name: "Refined Linen Chore Jacket",
-          description: "A rugged standard elevated. Heavyweight European flax linen that develops character with every wear. Features hand-polished Corozo nut buttons.",
-          price: 9500,
-          salePrice: 7600,
-          discountPercentage: 20,
-          images: ["https://images.unsplash.com/photo-1555069519-030805cc4638?q=80&w=2000&auto=format&fit=crop"],
-          category: "Men",
-          subcategory: "Outerwear",
-          sizes: ["S", "M", "L", "XL"],
-          colors: ["Sand", "Olive"],
-          stock: 15,
-          rating: 4.9,
-          reviewCount: 15,
           isTrending: true,
           createdAt: Date.now(),
           updatedAt: Date.now()

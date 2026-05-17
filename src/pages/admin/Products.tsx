@@ -10,15 +10,11 @@ import {
   Plus, 
   Search, 
   Filter, 
-  MoreVertical, 
   Edit2, 
   Trash2, 
-  LayoutGrid, 
-  Table as TableIcon,
   ChevronLeft,
   X,
-  Upload,
-  ChevronRight
+  Upload
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
@@ -52,13 +48,11 @@ export default function AdminProducts() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
     }
 
-    // Check file size (e.g., 5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size should be less than 5MB');
       return;
@@ -68,7 +62,7 @@ export default function AdminProducts() {
     
     try {
       if (!storage) {
-        throw new Error('Storage service is not initialized. Please check your Firebase configuration.');
+        throw new Error('Storage service is not initialized.');
       }
       
       const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
@@ -77,7 +71,7 @@ export default function AdminProducts() {
       
       const newImgs = [...(formData.images || [])];
       newImgs[index] = downloadURL;
-      setFormData({ ...formData, images: newImgs });
+      setFormData(prev => ({ ...prev, images: newImgs }));
       toast.success('Image uploaded successfully');
     } catch (error) {
       console.error('Upload error:', error);
@@ -92,12 +86,15 @@ export default function AdminProducts() {
   }, [isAdmin, authLoading, navigate]);
 
   const fetchProducts = async () => {
+    setLoading(true);
     try {
       const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      setProducts(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
+      const fetchedProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      setProducts(fetchedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
+      toast.error('Failed to fetch product list');
     } finally {
       setLoading(false);
     }
@@ -109,45 +106,44 @@ export default function AdminProducts() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.price || !formData.salePrice) {
+    if (!formData.name || formData.price === undefined || formData.salePrice === undefined) {
       toast.error('Please fill required fields');
       return;
     }
 
-    // Auto-calculate discount percentage
     const price = Number(formData.price);
     const salePrice = Number(formData.salePrice);
     const discountPercentage = price > salePrice 
       ? Math.round(((price - salePrice) / price) * 100) 
       : 0;
 
+    const productData = {
+      ...formData,
+      price,
+      salePrice,
+      discountPercentage,
+      images: formData.images?.filter(img => img.trim() !== '') || [],
+      updatedAt: Date.now()
+    };
+
     try {
       if (editingId) {
-        await updateDoc(doc(db, 'products', editingId), {
-          ...formData,
-          price,
-          salePrice,
-          discountPercentage,
-          updatedAt: Date.now()
-        });
+        await updateDoc(doc(db, 'products', editingId), productData);
         toast.success('Product updated');
       } else {
         await addDoc(collection(db, 'products'), {
-          ...formData,
-          price,
-          salePrice,
-          discountPercentage,
+          ...productData,
           rating: 4.5,
           reviewCount: Math.floor(Math.random() * 20) + 5,
           createdAt: Date.now(),
-          updatedAt: Date.now()
         });
         toast.success('Product added successfully');
       }
       setIsModalOpen(false);
       resetForm();
-      fetchProducts();
+      await fetchProducts();
     } catch (error) {
+      console.error('Submit error:', error);
       toast.error('Operation failed');
     }
   };
@@ -179,7 +175,7 @@ export default function AdminProducts() {
       try {
         await deleteDoc(doc(db, 'products', id));
         toast.success('Style removed');
-        fetchProducts();
+        await fetchProducts();
       } catch (error) {
         toast.error('Deletion failed');
       }
@@ -214,7 +210,6 @@ export default function AdminProducts() {
       </header>
 
       <main className="container mx-auto px-4 md:px-12 py-20 space-y-16 max-w-7xl">
-        {/* Toolbar */}
         <div className="flex flex-col md:flex-row gap-8">
           <div className="flex-grow relative">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-black/20" />
@@ -234,7 +229,6 @@ export default function AdminProducts() {
           </div>
         </div>
 
-        {/* Product Grid */}
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[1, 2, 3, 4].map(i => <div key={i} className="aspect-[3/4] bg-white animate-pulse" />)}
@@ -276,7 +270,6 @@ export default function AdminProducts() {
         )}
       </main>
 
-      {/* Product Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <motion.div 
@@ -353,10 +346,8 @@ export default function AdminProducts() {
                     onChange={e => setFormData({...formData, category: e.target.value})}
                     className="w-full border-2 border-gray-100 p-4 font-bold text-sm outline-none focus:border-black transition-all bg-white"
                   >
-                    <option>Women</option>
-                    <option>Men</option>
-                    <option>Kids</option>
-                    <option>Accessories</option>
+                    <option value="Women">Women</option>
+                    <option value="Accessories">Accessories</option>
                   </select>
                 </div>
 
