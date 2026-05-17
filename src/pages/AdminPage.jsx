@@ -9,17 +9,21 @@ function AdminProductList({ products, onDelete }) {
     return (
         <div className="mt-12">
             <h2 className="text-2xl font-bold mb-4">Manage Products</h2>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map(product => (
-                    <div key={product.id} className="flex items-center justify-between bg-white p-4 rounded-lg shadow-md">
-                        <div className="flex items-center space-x-4">
-                            <img src={product.imageUrl} alt={product.name} className="w-16 h-16 object-cover rounded"/>
+                    <div key={product.id} className="bg-white p-4 rounded-lg shadow-md flex flex-col justify-between">
+                        <div className="flex items-start space-x-4">
+                            <img src={product.imageUrl} alt={product.name} className="w-20 h-20 object-cover rounded"/>
                             <div>
                                 <p className="font-semibold">{product.name}</p>
-                                <p className="text-sm text-gray-500">${product.price}</p>
+                                <p className="text-sm text-gray-500">{product.color}, {product.size}</p>
+                                <div className="flex items-center space-x-2 mt-1">
+                                    <p className="text-red-500 font-bold text-lg">${product.price}</p>
+                                    <p className="text-sm text-gray-500 line-through">${product.originalPrice}</p>
+                                </div>
                             </div>
                         </div>
-                        <button onClick={() => onDelete(product.id, product.imageName)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">
+                        <button onClick={() => onDelete(product.id, product.imageName)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm mt-4 self-end">
                             Delete
                         </button>
                     </div>
@@ -35,7 +39,10 @@ export default function AdminPage() {
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [price, setPrice] = useState('');
+    const [originalPrice, setOriginalPrice] = useState('');
+    const [price, setPrice] = useState(''); // This will be the selling price
+    const [size, setSize] = useState('');
+    const [color, setColor] = useState('');
     const [image, setImage] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -44,14 +51,12 @@ export default function AdminPage() {
     const [products, setProducts] = useState([]);
     const [productsLoading, setProductsLoading] = useState(true);
 
-    // Redirect if not logged in
     useEffect(() => {
         if (!currentUser) {
             navigate('/login');
         }
     }, [currentUser, navigate]);
 
-    // Fetch products
     useEffect(() => {
         const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -74,8 +79,12 @@ export default function AdminPage() {
             setError('Product image is required.');
             return;
         }
-        setError('');
+        if (!name || !description || !originalPrice || !price || !size || !color) {
+            setError('Please fill out all fields.');
+            return;
+        }
         setLoading(true);
+        setError('');
 
         const imageName = `${Date.now()}_${image.name}`;
         const storageRef = ref(storage, `products/${imageName}`);
@@ -86,100 +95,111 @@ export default function AdminPage() {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 setUploadProgress(progress);
             },
-            (err) => {
-                console.error(err);
+            (error) => {
                 setError('Failed to upload image. Please try again.');
+                console.error(error);
                 setLoading(false);
             },
             async () => {
-                // Upload complete, get download URL
                 try {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    // Save product to Firestore
                     await addDoc(collection(db, 'products'), {
                         name,
                         description,
+                        originalPrice: parseFloat(originalPrice),
                         price: parseFloat(price),
+                        size,
+                        color,
                         imageUrl: downloadURL,
-                        imageName, // Store image name for deletion
-                        createdAt: serverTimestamp()
+                        imageName: imageName,
+                        createdAt: serverTimestamp(),
                     });
+                    
                     // Reset form
                     setName('');
                     setDescription('');
+                    setOriginalPrice('');
                     setPrice('');
+                    setSize('');
+                    setColor('');
                     setImage(null);
-                    e.target.reset(); // Reset file input
+                    setUploadProgress(0);
+
                 } catch (dbError) {
+                    setError('Failed to save product details. Please try again.');
                     console.error(dbError);
-                    setError('Failed to save product details.');
                 } finally {
                     setLoading(false);
-                    setUploadProgress(0);
                 }
             }
         );
     };
-    
+
     const handleDelete = async (productId, imageName) => {
-        if (!window.confirm('Are you sure you want to delete this product?')) return;
-        try {
-            // Delete from Firestore
-            await deleteDoc(doc(db, 'products', productId));
-            // Delete image from Storage
-            if(imageName){
-                 const imageRef = ref(storage, `products/${imageName}`);
-                 // You might want to add error handling for deletion as well
-                 await deleteDoc(imageRef);
-            } else{
-                 console.log('No image name found for this product, skipping storage deletion.')
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            try {
+                // Delete from Firestore
+                await deleteDoc(doc(db, 'products', productId));
+                
+                // Delete image from Storage
+                const imageRef = ref(storage, `products/${imageName}`);
+                await deleteObject(imageRef);
+
+            } catch (err) {
+                console.error("Error removing document: ", err);
+                alert("Error deleting product. Please check the console.");
             }
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            alert('Failed to delete product.');
         }
     };
 
-    if (!currentUser) {
-        return <p>Loading...</p>; // Or a spinner
-    }
-
     return (
-        <div className="max-w-4xl mx-auto mt-6">
+        <div className="max-w-4xl mx-auto mt-6 p-4">
             <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
             <div className="bg-white p-8 rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold mb-4">Add New Product</h2>
                 {error && <p className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</p>}
                 <form onSubmit={handleSubmit}>
-                    {/* Form fields ... */}
                     <div className="mb-4">
                         <label htmlFor="name" className="block text-gray-700 font-bold mb-2">Product Name</label>
-                        <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" required />
+                        <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" />
                     </div>
                     <div className="mb-4">
                         <label htmlFor="description" className="block text-gray-700 font-bold mb-2">Description</label>
-                        <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" required />
+                        <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" rows="3"></textarea>
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="price" className="block text-gray-700 font-bold mb-2">Price</label>
-                        <input type="number" id="price" value={price} onChange={e => setPrice(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" required />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="image" className="block text-gray-700 font-bold mb-2">Product Image</label>
-                        <input type="file" id="image" onChange={handleImageChange} className="w-full" required />
-                    </div>
-                    {loading && (
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                            <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label htmlFor="originalPrice" className="block text-gray-700 font-bold mb-2">Original Price ($)</label>
+                            <input type="number" id="originalPrice" value={originalPrice} onChange={e => setOriginalPrice(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" />
                         </div>
-                    )}
-                    <button type="submit" disabled={loading} className="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 w-full disabled:bg-gray-400">
-                        {loading ? `Uploading... ${Math.round(uploadProgress)}%` : 'Add Product'}
+                        <div>
+                           <label htmlFor="price" className="block text-gray-700 font-bold mb-2">Selling Price ($)</label>
+                            <input type="number" id="price" value={price} onChange={e => setPrice(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" />
+                        </div>
+                    </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label htmlFor="size" className="block text-gray-700 font-bold mb-2">Size (e.g., S, M, L, XL)</label>
+                            <input type="text" id="size" value={size} onChange={e => setSize(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" />
+                        </div>
+                        <div>
+                           <label htmlFor="color" className="block text-gray-700 font-bold mb-2">Color</label>
+                            <input type="text" id="color" value={color} onChange={e => setColor(e.target.value)} className="shadow appearance-none border rounded w-full py-2 px-3" />
+                        </div>
+                    </div>
+                    <div className="mb-6">
+                        <label htmlFor="image" className="block text-gray-700 font-bold mb-2">Product Image</label>
+                        <input type="file" id="image" onChange={handleImageChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"/>
+                    </div>
+                    
+                    {loading && <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4"><div className="bg-blue-600 h-2.5 rounded-full" style={{width: `${uploadProgress}%`}}></div></div>}
+                    
+                    <button type="submit" disabled={loading} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full disabled:bg-blue-300">
+                        {loading ? 'Uploading...' : 'Add Product'}
                     </button>
                 </form>
             </div>
-
-            {productsLoading ? <p className="mt-8">Loading products list...</p> : <AdminProductList products={products} onDelete={handleDelete} />}
+             {productsLoading ? <p>Loading products...</p> : <AdminProductList products={products} onDelete={handleDelete} />}
         </div>
     );
 }
