@@ -46,8 +46,8 @@ function HeroSection() {
                 <div className="flex flex-col md:flex-row items-center justify-between py-12 md:py-24">
                     <div className="text-center md:text-left md:w-1/2">
                         <h1 className="text-4xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">
-                            <span className="block">Style That Fits,</span>
-                            <span className="block text-indigo-600">Prices That Don't Pinch.</span>
+                            <span className="block">Discover Your Style,</span>
+                            <span className="block text-indigo-600">Redefine Your Wardrobe.</span>
                         </h1>
                         <p className="mt-4 text-lg lg:text-xl text-gray-600">
                             Welcome to Dressify, your one-stop shop for the latest trends and timeless classics. Discover fashion that tells your story.
