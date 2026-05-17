@@ -24,7 +24,8 @@ import {
   X,
   Link as LinkIcon,
   CheckCircle,
-  Check
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
@@ -141,16 +142,21 @@ export default function AdminProducts() {
     };
 
     try {
-      if (editingId) {
-        await updateDoc(doc(db, 'products', editingId), productPayload);
-      } else {
-        await addDoc(collection(db, 'products'), {
-          ...productPayload,
-          rating: 4.5,
-          reviewCount: 0,
-          createdAt: Date.now(),
-        });
-      }
+      // Set a timeout for the database call
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Database operation timed out")), 10000)
+      );
+
+      const dbOperation = editingId 
+        ? updateDoc(doc(db, 'products', editingId), productPayload)
+        : addDoc(collection(db, 'products'), {
+            ...productPayload,
+            rating: 4.5,
+            reviewCount: 0,
+            createdAt: Date.now(),
+          });
+
+      await Promise.race([dbOperation, timeoutPromise]);
       
       setIsSubmitting(false);
       setIsSuccess(true);
@@ -174,7 +180,11 @@ export default function AdminProducts() {
     } catch (error: any) {
       setIsSubmitting(false);
       console.error('Save error:', error);
-      toast.error(`Database Error: ${error.message}`);
+      let msg = error.message;
+      if (msg.includes('permission-denied')) {
+        msg = "Permission Denied. Verify you are a registered Admin.";
+      }
+      toast.error(msg);
     }
   };
 
@@ -191,6 +201,8 @@ export default function AdminProducts() {
       isTrending: false,
     });
     setEditingId(null);
+    setIsSubmitting(false);
+    setIsSuccess(false);
   };
 
   const handleEdit = (product: Product) => {
@@ -215,24 +227,24 @@ export default function AdminProducts() {
   };
 
   if (authLoading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="min-h-screen bg-black flex items-center justify-center text-center">
       <div className="w-12 h-12 border-2 border-[#C5A059] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
     <div className="bg-white min-h-screen pb-20 text-center">
-      <header className="bg-black py-16 md:py-24">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col items-center space-y-8">
-            <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 hover:text-[#C5A059] transition-colors flex items-center">
+      <header className="bg-black py-16 md:py-24 text-center">
+        <div className="container mx-auto px-6 text-center">
+          <div className="flex flex-col items-center space-y-8 text-center">
+            <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 hover:text-[#C5A059] transition-colors flex items-center justify-center">
               <ChevronLeft className="w-3 h-3 mr-2" /> Back to Nexus
             </Link>
-            <h1 className="text-5xl md:text-7xl font-display font-medium uppercase tracking-tighter text-white">Archive</h1>
-            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#C5A059]">{products.length} Styles Live</p>
+            <h1 className="text-5xl md:text-7xl font-display font-medium uppercase tracking-tighter text-white text-center">Archive</h1>
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#C5A059] text-center">{products.length} Styles Live</p>
             <button 
               onClick={() => { resetForm(); setIsModalOpen(true); }}
-              className="px-16 py-6 bg-[#C5A059] text-black text-[11px] font-black uppercase tracking-[0.4em] hover:bg-white transition-all duration-500 shadow-2xl"
+              className="px-16 py-6 bg-[#C5A059] text-black text-[11px] font-black uppercase tracking-[0.4em] hover:bg-white transition-all duration-500 shadow-2xl text-center"
             >
               Add New Piece
             </button>
@@ -240,7 +252,7 @@ export default function AdminProducts() {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-20 max-w-7xl">
+      <main className="container mx-auto px-6 py-20 max-w-7xl text-center">
         <div className="max-w-3xl mx-auto mb-20 relative text-center">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-black/20" />
           <input 
@@ -259,7 +271,7 @@ export default function AdminProducts() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 text-center">
             {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((product) => (
               <motion.div 
                 layout
@@ -268,14 +280,14 @@ export default function AdminProducts() {
                 key={product.id} 
                 className="group bg-white border border-black/5 hover:border-[#C5A059] transition-all duration-700 p-4 text-center"
               >
-                <div className="aspect-[3/4] overflow-hidden bg-black/5 grayscale group-hover:grayscale-0 transition-all duration-1000">
+                <div className="aspect-[3/4] overflow-hidden bg-black/5 grayscale group-hover:grayscale-0 transition-all duration-1000 text-center">
                   <img src={product.images?.[0] || ''} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]" />
                 </div>
                 <div className="pt-8 pb-4 space-y-4 text-center">
-                  <span className="text-[8px] font-black uppercase tracking-[0.3em] text-black/30 block text-center">{product.category}</span>
-                  <h3 className="text-[11px] font-black uppercase tracking-widest text-black leading-tight truncate text-center">{product.name}</h3>
+                  <span className="text-[8px] font-black uppercase tracking-[0.3em] text-black/30 block text-center uppercase">{product.category}</span>
+                  <h3 className="text-[11px] font-black uppercase tracking-widest text-black leading-tight truncate text-center uppercase">{product.name}</h3>
                   <p className="font-black text-[11px] tracking-widest text-black text-center">{formatCurrency(product.salePrice)}</p>
-                  <div className="flex justify-center space-x-4 pt-4">
+                  <div className="flex justify-center space-x-4 pt-4 text-center">
                     <button onClick={() => handleEdit(product)} className="p-3 bg-black text-white hover:bg-[#C5A059] hover:text-black transition-colors"><Edit2 className="w-3 h-3" /></button>
                     <button onClick={() => handleDelete(product.id)} className="p-3 border-2 border-black/10 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"><Trash2 className="w-3 h-3" /></button>
                   </div>
@@ -297,12 +309,12 @@ export default function AdminProducts() {
             >
               <div className="px-10 py-10 border-b border-black/5 flex items-center justify-between text-center relative">
                 <div className="w-full text-center">
-                  <h2 className="text-3xl font-display font-medium uppercase tracking-tighter text-black text-center">
+                  <h2 className="text-3xl font-display font-medium uppercase tracking-tighter text-black text-center uppercase">
                     {editingId ? 'Modify Style' : 'New Entry'}
                   </h2>
-                  <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#C5A059] mt-2 text-center">Permanent Cloud Sync</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#C5A059] mt-2 text-center uppercase">Permanent Cloud Sync</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="absolute right-10 p-3 hover:rotate-90 transition-transform"><X className="w-6 h-6" /></button>
+                <button onClick={() => { if(!isSubmitting) setIsModalOpen(false); }} className="absolute right-10 p-3 hover:rotate-90 transition-transform"><X className="w-6 h-6" /></button>
               </div>
 
               <form onSubmit={handleSubmit} className="p-10 md:p-16 overflow-y-auto space-y-16 text-center">
@@ -383,8 +395,8 @@ export default function AdminProducts() {
                         <div key={idx} className="space-y-8 p-8 border-2 border-black/5 bg-black/5 text-center">
                           <div className="space-y-4 text-center">
                             <label className="text-[8px] font-black uppercase tracking-[0.3em] text-black/40 block text-center uppercase">Asset URL (Permanent Link)</label>
-                            <div className="flex gap-4 text-center">
-                              <div className="relative flex-grow text-center">
+                            <div className="flex gap-4 text-center justify-center">
+                              <div className="relative flex-grow max-w-lg text-center">
                                 <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 text-black/20" />
                                 <input 
                                   type="text" 
@@ -458,11 +470,11 @@ export default function AdminProducts() {
                     <button 
                       type="submit" 
                       disabled={isSubmitting || isSuccess}
-                      className={`w-full py-8 text-white text-[12px] font-black uppercase tracking-[0.5em] transition-all duration-700 shadow-2xl disabled:opacity-80 flex items-center justify-center ${isSuccess ? 'bg-green-600' : 'bg-black hover:bg-[#C5A059] hover:text-black'}`}
+                      className={`w-full py-8 text-white text-[12px] font-black uppercase tracking-[0.5em] transition-all duration-700 shadow-2xl disabled:opacity-80 flex items-center justify-center ${isSuccess ? 'bg-green-600' : isSubmitting ? 'bg-black' : 'bg-black hover:bg-[#C5A059] hover:text-black'}`}
                     >
                       {isSubmitting ? (
                         <div className="flex items-center justify-center space-x-4">
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           <span className="uppercase">Synchronizing Archive...</span>
                         </div>
                       ) : isSuccess ? (
@@ -474,6 +486,9 @@ export default function AdminProducts() {
                         <span className="uppercase">{editingId ? 'Push Final Updates' : 'Publish to Storefront'}</span>
                       )}
                     </button>
+                    {isSubmitting && (
+                      <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#C5A059] animate-pulse">Establishing Secure Database Connection...</p>
+                    )}
                   </div>
                 </div>
               </form>
