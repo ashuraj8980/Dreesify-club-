@@ -25,9 +25,9 @@ import {
   ChevronLeft,
   X,
   Upload,
-  ExternalLink,
+  Link as LinkIcon,
   Package,
-  AlertCircle
+  CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
@@ -41,7 +41,6 @@ export default function AdminProducts() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Form State
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
     description: '',
@@ -60,7 +59,6 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      if (!db) throw new Error("Firestore instance is not ready.");
       const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
       const fetchedProducts = querySnapshot.docs.map(doc => ({ 
@@ -97,22 +95,17 @@ export default function AdminProducts() {
     
     try {
       if (!storage) throw new Error('Cloud Storage unavailable.');
-      
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const storageRef = ref(storage, `products/${fileName}`);
-      
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      setFormData(prev => {
-        const newImgs = [...(prev.images || [])];
-        newImgs[index] = downloadURL;
-        return { ...prev, images: newImgs };
-      });
+      const newImgs = [...(formData.images || [])];
+      newImgs[index] = downloadURL;
+      setFormData({ ...formData, images: newImgs });
       toast.success('Asset uploaded');
     } catch (error: any) {
-      console.error('Upload Error:', error);
       toast.error(`Upload Failed: ${error.message}`);
     } finally {
       setUploadingImageIndex(null);
@@ -125,8 +118,8 @@ export default function AdminProducts() {
 
     const validImages = (formData.images || []).filter(img => img && img.trim() !== '');
     
-    if (!formData.name?.trim()) return toast.error('Name is mandatory');
-    if (validImages.length === 0) return toast.error('At least one image is required');
+    if (!formData.name?.trim()) return toast.error('Name is required');
+    if (validImages.length === 0) return toast.error('Please provide at least one Image URL or Upload');
 
     setIsSubmitting(true);
     
@@ -167,7 +160,6 @@ export default function AdminProducts() {
       resetForm();
       await fetchProducts();
     } catch (error: any) {
-      console.error('Submission Error:', error);
       toast.error(`Database Error: ${error.message}`);
     } finally {
       setIsSubmitting(false);
@@ -199,7 +191,7 @@ export default function AdminProducts() {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Permanent deletion? This cannot be undone.')) {
+    if (window.confirm('Permanent deletion?')) {
       try {
         await deleteDoc(doc(db, 'products', id));
         toast.success('Item Purged');
@@ -211,26 +203,24 @@ export default function AdminProducts() {
   };
 
   if (authLoading) return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="w-12 h-12 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="w-12 h-12 border-2 border-[#C5A059] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="bg-[#FAFAFA] min-h-screen pb-20">
-      <header className="bg-white border-b border-black/5 py-12 md:py-20">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-10">
-            <div className="space-y-4 text-center md:text-left">
-              <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 flex items-center justify-center md:justify-start hover:text-black transition-colors group">
-                <ChevronLeft className="w-3 h-3 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Nexus
-              </Link>
-              <h1 className="text-5xl md:text-7xl font-display font-medium uppercase tracking-tighter">Inventory</h1>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-gold">{products.length} Styles active in collection</p>
-            </div>
+    <div className="bg-white min-h-screen pb-20 text-center">
+      <header className="bg-black py-16 md:py-24">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col items-center space-y-8">
+            <Link to="/admin" className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 hover:text-[#C5A059] transition-colors flex items-center">
+              <ChevronLeft className="w-3 h-3 mr-2" /> Back to Nexus
+            </Link>
+            <h1 className="text-5xl md:text-7xl font-display font-medium uppercase tracking-tighter text-white">Archive</h1>
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#C5A059]">{products.length} Styles Live</p>
             <button 
               onClick={() => { resetForm(); setIsModalOpen(true); }}
-              className="px-12 py-5 bg-black text-white text-[11px] font-black uppercase tracking-[0.3em] hover:bg-brand-gold hover:text-black transition-all duration-500 shadow-xl"
+              className="px-16 py-6 bg-[#C5A059] text-black text-[11px] font-black uppercase tracking-[0.4em] hover:bg-white transition-all duration-500 shadow-2xl"
             >
               Add New Piece
             </button>
@@ -238,176 +228,170 @@ export default function AdminProducts() {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 md:px-12 py-16 max-w-7xl">
-        <div className="flex flex-col md:flex-row gap-6 mb-16">
-          <div className="flex-grow relative group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-black/20 group-focus-within:text-brand-gold transition-colors" />
-            <input 
-              type="text" 
-              placeholder="Filter by name, ID or category..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-black/5 pl-16 pr-6 py-6 text-[11px] font-black uppercase tracking-widest focus:border-brand-gold focus:ring-1 focus:ring-brand-gold outline-none transition-all shadow-sm"
-            />
-          </div>
-          <button className="bg-white border border-black/5 px-10 py-6 flex items-center space-x-4 hover:border-black transition-all group shadow-sm">
-            <Filter className="w-4 h-4 text-black/40 group-hover:text-black transition-colors" />
-            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Sort Collection</span>
-          </button>
+      <main className="container mx-auto px-6 py-20 max-w-7xl">
+        <div className="max-w-3xl mx-auto mb-20 relative">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-black/20" />
+          <input 
+            type="text" 
+            placeholder="Search Collection..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white border-2 border-black/5 pl-16 pr-6 py-6 text-center text-[11px] font-black uppercase tracking-widest focus:border-[#C5A059] outline-none transition-all"
+          />
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-              <div key={i} className="aspect-[3/4] bg-white border border-black/5 animate-pulse" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="aspect-[3/4] bg-black/5 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-10">
-            {products.length === 0 ? (
-              <div className="col-span-full py-40 text-center space-y-6">
-                <Package className="w-12 h-12 text-black/10 mx-auto" />
-                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-black/30">The archive is currently empty</p>
-              </div>
-            ) : (
-              products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((product) => (
-                <motion.div 
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  key={product.id} 
-                  className="group bg-white border border-black/5 hover:border-black transition-all duration-700 relative"
-                >
-                  <div className="aspect-[3/4] overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-1000">
-                    <img src={product.images?.[0] || ''} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[3s]" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
+            {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((product) => (
+              <motion.div 
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                key={product.id} 
+                className="group bg-white border border-black/5 hover:border-[#C5A059] transition-all duration-700 p-4"
+              >
+                <div className="aspect-[3/4] overflow-hidden bg-black/5 grayscale group-hover:grayscale-0 transition-all duration-1000">
+                  <img src={product.images?.[0] || ''} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]" />
+                </div>
+                <div className="pt-8 pb-4 space-y-4">
+                  <span className="text-[8px] font-black uppercase tracking-[0.3em] text-black/30 block">{product.category}</span>
+                  <h3 className="text-[11px] font-black uppercase tracking-widest text-black leading-tight truncate">{product.name}</h3>
+                  <p className="font-black text-[11px] tracking-widest text-black">{formatCurrency(product.salePrice)}</p>
+                  <div className="flex justify-center space-x-4 pt-4">
+                    <button onClick={() => handleEdit(product)} className="p-3 bg-black text-white hover:bg-[#C5A059] hover:text-black transition-colors"><Edit2 className="w-3 h-3" /></button>
+                    <button onClick={() => handleDelete(product.id)} className="p-3 border-2 border-black/10 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"><Trash2 className="w-3 h-3" /></button>
                   </div>
-                  
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[8px] font-black uppercase tracking-[0.3em] text-black/30">{product.category}</span>
-                      <span className={`text-[8px] font-black uppercase px-2 py-1 ${product.stock < 10 ? 'text-red-500 bg-red-50' : 'text-brand-gold bg-brand-gold/5'}`}>
-                        Qty: {product.stock}
-                      </span>
-                    </div>
-                    <h3 className="text-[12px] font-black uppercase tracking-tight text-black leading-tight truncate">{product.name}</h3>
-                    <div className="flex items-center justify-between pt-2">
-                       <p className="font-black text-[12px] text-black tracking-widest">{formatCurrency(product.salePrice)}</p>
-                       <div className="flex space-x-2">
-                          <button onClick={() => handleEdit(product)} className="p-2.5 hover:bg-black hover:text-white transition-colors border border-black/5"><Edit2 className="w-3 h-3" /></button>
-                          <button onClick={() => handleDelete(product.id)} className="p-2.5 hover:bg-red-500 hover:text-white transition-colors border border-black/5"><Trash2 className="w-3 h-3" /></button>
-                       </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            )}
+                </div>
+              </motion.div>
+            ))}
           </div>
         )}
       </main>
 
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-xl">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 30 }}
-              className="bg-white w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="bg-white w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
             >
-              <div className="px-10 py-8 border-b border-black/5 flex items-center justify-between bg-white z-10">
-                <div className="space-y-1">
-                  <h2 className="text-2xl font-display font-medium uppercase tracking-tighter">
-                    {editingId ? 'Modify Archival Entry' : 'New Collection Piece'}
+              <div className="px-10 py-10 border-b border-black/5 flex items-center justify-between text-center">
+                <div className="w-full">
+                  <h2 className="text-3xl font-display font-medium uppercase tracking-tighter text-black">
+                    {editingId ? 'Modify Style' : 'New Entry'}
                   </h2>
-                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-brand-gold">
-                    All updates are synced in real-time to the storefront
-                  </p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#C5A059] mt-2">Permanent Cloud Sync</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-gray-50 transition-colors"><X className="w-5 h-5" /></button>
+                <button onClick={() => setIsModalOpen(false)} className="absolute right-10 p-3 hover:rotate-90 transition-transform"><X className="w-6 h-6" /></button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-10 md:p-16 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-16">
-                <div className="space-y-10">
-                  <div className="space-y-4">
-                    <label className="text-[11px] font-black uppercase tracking-widest text-black/40 flex items-center">
-                      Designation <span className="ml-2 text-red-500">*</span>
-                    </label>
+              <form onSubmit={handleSubmit} className="p-10 md:p-16 overflow-y-auto space-y-16">
+                <div className="space-y-12">
+                  <div className="space-y-6">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block">Piece Designation</label>
                     <input 
                       type="text" 
                       required
-                      placeholder="E.G. SCULPTED MIDI DRESS"
+                      placeholder="NAME OF THE OBJECT"
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
-                      className="w-full border-b-2 border-black/10 py-4 font-display font-medium text-xl outline-none focus:border-brand-gold transition-all"
+                      className="w-full border-b-2 border-black/10 py-4 font-display text-2xl text-center outline-none focus:border-[#C5A059] transition-all uppercase"
                     />
                   </div>
                   
-                  <div className="space-y-4">
-                    <label className="text-[11px] font-black uppercase tracking-widest text-black/40">Narrative</label>
+                  <div className="space-y-6">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block">Description</label>
                     <textarea 
-                      rows={4}
-                      placeholder="The structural nuances of this piece..."
+                      rows={3}
+                      placeholder="NARRATIVE OF THE STYLE"
                       value={formData.description}
                       onChange={e => setFormData({...formData, description: e.target.value})}
-                      className="w-full border border-black/5 p-6 font-medium text-sm outline-none focus:border-brand-gold transition-all resize-none bg-gray-50"
+                      className="w-full border-2 border-black/5 p-6 text-center text-sm font-medium outline-none focus:border-[#C5A059] transition-all resize-none bg-black/5 uppercase tracking-wider"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-10">
-                    <div className="space-y-4">
-                      <label className="text-[11px] font-black uppercase tracking-widest text-black/40">Market Value (₹)</label>
+                  <div className="grid grid-cols-2 gap-12">
+                    <div className="space-y-6">
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block">Retail (₹)</label>
                       <input 
                         type="number" 
                         required
                         value={formData.price}
                         onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                        className="w-full border-b-2 border-black/10 py-4 font-black text-lg outline-none focus:border-black transition-all"
+                        className="w-full border-b-2 border-black/10 py-4 font-black text-center text-xl outline-none focus:border-black transition-all"
                       />
                     </div>
-                    <div className="space-y-4">
-                      <label className="text-[11px] font-black uppercase tracking-widest text-brand-gold">Exclusive Price (₹)</label>
+                    <div className="space-y-6">
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[#C5A059] block">Exclusive (₹)</label>
                       <input 
                         type="number" 
                         required
                         value={formData.salePrice}
                         onChange={e => setFormData({...formData, salePrice: Number(e.target.value)})}
-                        className="w-full border-b-2 border-brand-gold/30 py-4 font-black text-lg outline-none focus:border-brand-gold transition-all"
+                        className="w-full border-b-2 border-[#C5A059]/30 py-4 font-black text-center text-xl outline-none focus:border-[#C5A059] transition-all"
                       />
                     </div>
                   </div>
-                </div>
 
-                <div className="space-y-12">
-                  <div className="grid grid-cols-2 gap-10">
-                    <div className="space-y-4">
-                      <label className="text-[11px] font-black uppercase tracking-widest text-black/40">Archive Sector</label>
+                  <div className="grid grid-cols-2 gap-12">
+                    <div className="space-y-6">
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block">Sector</label>
                       <select 
                         value={formData.category}
                         onChange={e => setFormData({...formData, category: e.target.value})}
-                        className="w-full border-b-2 border-black/10 py-4 font-black text-[11px] outline-none focus:border-black transition-all bg-white uppercase tracking-widest"
+                        className="w-full border-b-2 border-black/10 py-4 font-black text-center text-[10px] outline-none focus:border-[#C5A059] transition-all bg-white uppercase tracking-widest"
                       >
                         <option value="Women">Women</option>
                         <option value="Accessories">Accessories</option>
                       </select>
                     </div>
-                    <div className="space-y-4">
-                      <label className="text-[11px] font-black uppercase tracking-widest text-black/40">Stock Status</label>
+                    <div className="space-y-6">
+                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 block">Stock</label>
                       <input 
                         type="number" 
                         value={formData.stock}
                         onChange={e => setFormData({...formData, stock: Number(e.target.value)})}
-                        className="w-full border-b-2 border-black/10 py-4 font-black text-[11px] outline-none transition-all"
+                        className="w-full border-b-2 border-black/10 py-4 font-black text-center text-xl outline-none transition-all"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <label className="text-[11px] font-black uppercase tracking-widest text-black/40">Visual Assets</label>
-                    <div className="space-y-6">
+                  <div className="space-y-10 pt-10 border-t border-black/5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.5em] text-black/30 block">Visual Identity</label>
+                    <div className="space-y-12">
                       {formData.images?.map((img, idx) => (
-                        <div key={idx} className="relative group">
-                          <div className="flex gap-4">
-                            <div className="flex-grow">
+                        <div key={idx} className="space-y-8 p-8 border-2 border-black/5 bg-black/5">
+                          <div className="space-y-4">
+                            <label className="text-[8px] font-black uppercase tracking-[0.3em] text-black/40 block">Asset URL (Permanent Link)</label>
+                            <div className="flex gap-4">
+                              <div className="relative flex-grow">
+                                <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 text-black/20" />
+                                <input 
+                                  type="text" 
+                                  placeholder="HTTPS://IMAGE-HOST.COM/PHOTO.JPG"
+                                  value={img}
+                                  onChange={e => {
+                                    const newImgs = [...(formData.images || [])];
+                                    newImgs[idx] = e.target.value;
+                                    setFormData({...formData, images: newImgs});
+                                  }}
+                                  className="w-full bg-white border border-black/5 py-4 pl-12 pr-6 text-[10px] font-black tracking-widest outline-none focus:border-[#C5A059] transition-all"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-center space-x-10">
+                            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-black/20">OR</span>
+                            <div className="relative">
                               <input 
                                 type="file" 
                                 accept="image/*"
@@ -417,33 +401,21 @@ export default function AdminProducts() {
                               />
                               <label 
                                 htmlFor={`file-${idx}`}
-                                className={`w-full flex items-center justify-between px-6 py-5 border border-dashed ${uploadingImageIndex === idx ? 'border-brand-gold' : 'border-black/10 hover:border-black'} cursor-pointer transition-all`}
+                                className={`flex items-center px-10 py-4 border-2 border-black text-[9px] font-black uppercase tracking-[0.3em] cursor-pointer hover:bg-black hover:text-white transition-all ${uploadingImageIndex === idx ? 'opacity-50 animate-pulse' : ''}`}
                               >
-                                <div className="flex items-center space-x-4">
-                                  {uploadingImageIndex === idx ? (
-                                    <div className="w-3 h-3 border-2 border-brand-gold border-t-transparent rounded-full animate-spin" />
-                                  ) : <Upload className="w-3 h-3" />}
-                                  <span className="text-[9px] font-black uppercase tracking-[0.2em]">
-                                    {img ? 'Update Asset' : 'Upload From Storage'}
-                                  </span>
-                                </div>
-                                {img && <Package className="w-3 h-3 text-brand-gold" />}
+                                {uploadingImageIndex === idx ? 'Uploading...' : 'Upload File'}
                               </label>
                             </div>
-                            {idx > 0 && (
-                              <button type="button" onClick={() => {
-                                setFormData(prev => ({ ...prev, images: prev.images?.filter((_, i) => i !== idx) }));
-                              }} className="p-4 border border-black/5 hover:bg-red-500 hover:text-white transition-all text-black/20">
-                                <X className="w-3 h-3" />
-                              </button>
-                            )}
                           </div>
+
                           {img && (
-                            <div className="mt-4 flex items-center space-x-6 p-4 bg-gray-50 border border-black/5">
-                              <img src={img} className="w-16 aspect-[3/4] object-cover grayscale shadow-lg" alt="" />
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black uppercase text-black/30">CDN Reference</p>
-                                <p className="text-[9px] font-medium truncate max-w-[200px] text-brand-gold italic">Active Path Established</p>
+                            <div className="flex flex-col items-center space-y-4 pt-4">
+                              <div className="w-24 aspect-[3/4] overflow-hidden border-2 border-white shadow-2xl">
+                                <img src={img} className="w-full h-full object-cover grayscale" alt="Preview" />
+                              </div>
+                              <div className="flex items-center space-x-2 text-[#C5A059]">
+                                <CheckCircle className="w-3 h-3" />
+                                <span className="text-[8px] font-black uppercase tracking-widest">Active Asset</span>
                               </div>
                             </div>
                           )}
@@ -452,31 +424,31 @@ export default function AdminProducts() {
                       <button 
                         type="button" 
                         onClick={() => setFormData(prev => ({ ...prev, images: [...(prev.images || []), ''] }))}
-                        className="w-full py-4 text-[9px] font-black uppercase tracking-[0.3em] text-black/30 hover:text-black transition-colors"
+                        className="w-full py-4 text-[9px] font-black uppercase tracking-[0.5em] text-black/30 hover:text-black transition-colors"
                       >
                         + Add Perspective
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-10 border-t border-black/5">
+                  <div className="flex flex-col items-center space-y-12 pt-16 border-t border-black/5">
                     <div className="flex items-center space-x-4">
                       <input 
                         type="checkbox" 
                         id="trending"
                         checked={formData.isTrending}
                         onChange={e => setFormData({...formData, isTrending: e.target.checked})}
-                        className="w-4 h-4 accent-black"
+                        className="w-5 h-5 accent-black"
                       />
-                      <label htmlFor="trending" className="text-[10px] font-black uppercase tracking-[0.3em] cursor-pointer">Highlight in Trending</label>
+                      <label htmlFor="trending" className="text-[10px] font-black uppercase tracking-[0.4em] cursor-pointer">Highlight as Trending</label>
                     </div>
                     
                     <button 
                       type="submit" 
                       disabled={isSubmitting}
-                      className={`px-16 py-6 bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] hover:bg-brand-gold hover:text-black transition-all duration-700 shadow-2xl flex items-center space-x-4 ${isSubmitting ? 'opacity-50' : ''}`}
+                      className="w-full py-8 bg-black text-white text-[12px] font-black uppercase tracking-[0.5em] hover:bg-[#C5A059] hover:text-black transition-all duration-700 shadow-2xl disabled:opacity-50"
                     >
-                      {isSubmitting ? 'Synchronizing...' : (editingId ? 'Push Updates' : 'Publish to Store')}
+                      {isSubmitting ? 'Synchronizing Archive...' : (editingId ? 'Push Final Updates' : 'Publish to Storefront')}
                     </button>
                   </div>
                 </div>

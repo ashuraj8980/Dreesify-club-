@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <div className="space-y-32 md:space-y-48 pb-32 md:pb-48">
       {/* Hero Section - Fashion Editorial Style */}
-      <section className="relative h-[90vh] md:h-screen overflow-hidden flex items-center bg-brand-black">
+      <section className="relative h-[90vh] md:h-screen overflow-hidden flex items-center justify-center bg-brand-black text-center">
         <div className="absolute inset-0 z-0">
           <motion.img 
             initial={{ scale: 1.1, opacity: 0 }}
@@ -52,13 +52,13 @@ export default function Home() {
           />
         </div>
         
-        <div className="container mx-auto px-4 lg:px-12 relative z-10 text-white">
-          <div className="max-w-5xl">
+        <div className="container mx-auto px-4 lg:px-12 relative z-10 text-white flex flex-col items-center">
+          <div className="max-w-5xl w-full">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="space-y-8 md:space-y-12"
+              className="space-y-8 md:space-y-12 flex flex-col items-center"
             >
               <div className="overflow-hidden">
                 <span className="font-display uppercase tracking-[0.6em] text-[10px] md:text-xs block text-brand-gold">
@@ -66,37 +66,32 @@ export default function Home() {
                 </span>
               </div>
               
-              <h1 className="text-7xl md:text-[12rem] font-display font-medium leading-[0.85] tracking-tighter uppercase">
+              <h1 className="text-6xl md:text-[10rem] font-display font-medium leading-[0.85] tracking-tighter uppercase text-center">
                  Ethereal <br />
-                 <span className="italic font-serif lowercase text-brand-beige ml-12 md:ml-32">Form.</span>
+                 <span className="italic font-serif lowercase text-brand-beige">Form.</span>
               </h1>
               
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-12 mt-12">
+              <div className="flex flex-col items-center gap-12 mt-12 text-center">
                  <p className="text-lg md:text-xl text-brand-beige/60 font-serif italic max-w-md leading-relaxed">
                    "A curation of architectural silhouettes and visceral textiles, defined by the poetry of the self."
                  </p>
-                 <Link to="/category/women" className="luxury-button !px-16 py-6 group">
+                 <Link to="/category/women" className="bg-brand-gold text-brand-black font-black uppercase tracking-[0.4em] text-[10px] px-16 py-6 group hover:bg-white transition-all duration-500">
                    The Collection <ArrowRight className="inline-block ml-4 w-4 h-4 group-hover:translate-x-2 transition-transform" />
                  </Link>
               </div>
             </motion.div>
           </div>
         </div>
-        
-        <div className="absolute bottom-12 right-12 hidden lg:flex flex-col items-center space-y-6">
-          <div className="w-px h-32 bg-gradient-to-b from-transparent via-brand-gold to-transparent" />
-          <span className="text-[8px] uppercase tracking-[0.5em] font-black text-brand-gold vertical-text rotate-180">Curated Series</span>
-        </div>
       </section>
 
       {/* Product Display Section */}
-      <section className="container mx-auto px-4 lg:px-12">
+      <section className="container mx-auto px-4 lg:px-12 text-center">
         <header className="flex flex-col items-center text-center space-y-10 mb-24 md:mb-40">
           <div className="space-y-4">
             <span className="text-[10px] uppercase tracking-[0.8em] font-black text-brand-gold block">New Acquisitions</span>
             <h2 className="text-5xl md:text-8xl font-display font-medium uppercase tracking-tight">The Registry</h2>
           </div>
-          <p className="text-brand-black/40 font-serif italic text-xl max-w-2xl leading-relaxed">
+          <p className="text-brand-black/40 font-serif italic text-xl max-w-2xl leading-relaxed mx-auto">
             Discover pieces distilled to their absolute necessity, representing the intersection of modern geometry and ethical craftsmanship.
           </p>
         </header>
@@ -104,8 +99,8 @@ export default function Home() {
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-24">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-              <div key={i} className="animate-pulse space-y-8">
-                <div className="aspect-[3/4] bg-brand-beige/10" />
+              <div key={i} className="animate-pulse space-y-8 flex flex-col items-center">
+                <div className="aspect-[3/4] bg-brand-beige/10 w-full" />
                 <div className="h-4 bg-brand-beige/20 w-3/4" />
                 <div className="h-3 bg-brand-beige/10 w-1/4" />
               </div>
@@ -133,13 +128,13 @@ export default function Home() {
 
       {/* Brand Ethos Footer Callout */}
       <section className="container mx-auto px-4 lg:px-24">
-        <div className="bg-brand-black text-white p-12 md:p-32 relative overflow-hidden">
-          <div className="relative z-10 max-w-3xl space-y-12">
+        <div className="bg-brand-black text-white p-12 md:p-32 relative overflow-hidden text-center flex flex-col items-center">
+          <div className="relative z-10 max-w-3xl space-y-12 flex flex-col items-center">
             <h3 className="text-4xl md:text-7xl font-display uppercase tracking-tight leading-tight">
               Crafted for the <br />
               <span className="italic font-serif lowercase text-brand-gold">Conscious</span> individual.
             </h3>
-            <p className="text-brand-beige/60 text-lg md:text-xl font-serif italic leading-relaxed">
+            <p className="text-brand-beige/60 text-lg md:text-xl font-serif italic leading-relaxed mx-auto">
               Every piece in our collection is a testament to the beauty of restraint, collaborating with heritage mills to ensure your wardrobe is a permanent archive of exceptional design.
             </p>
             <Link to="/search" className="inline-block text-[10px] font-black uppercase tracking-[0.4em] border-b border-brand-gold pb-2 text-brand-gold hover:text-white hover:border-white transition-all">
