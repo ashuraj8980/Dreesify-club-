@@ -1,139 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { db } from '../firebase';
-import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 
-// Product Card Component
-function ProductCard({ product }) {
-    const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
-
-    return (
-        <div className="group relative border rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
-            <div className="w-full h-64 bg-gray-200 overflow-hidden">
-                <img 
-                    src={product.imageUrl} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-            </div>
-            {discount > 0 && (
-                 <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                    {discount}% OFF
-                </div>
-            )}
-            <div className="p-4 bg-white">
-                <h3 className="text-lg font-semibold text-gray-800 truncate">{product.name}</h3>
-                <p className="text-sm text-gray-500 mt-1">{product.color}</p>
-                <div className="flex items-baseline justify-between mt-3">
-                    <div className="flex items-center space-x-2">
-                        <p className="text-xl font-bold text-gray-900">${product.price}</p>
-                        {product.originalPrice > product.price && (
-                            <p className="text-sm text-gray-500 line-through">${product.originalPrice}</p>
-                        )}
-                    </div>
-                     <button className="bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">Add to Cart</button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// Hero Section Component
-function HeroSection() {
-    return (
-        <div className="bg-gradient-to-r from-pink-100 to-blue-100 mb-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col md:flex-row items-center justify-between py-12 md:py-24">
-                    <div className="text-center md:text-left md:w-1/2">
-                        <h1 className="text-4xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">
-                            <span className="block">Discover Your Style,</span>
-                            <span className="block text-indigo-600">Redefine Your Wardrobe.</span>
-                        </h1>
-                        <p className="mt-4 text-lg lg:text-xl text-gray-600">
-                            Welcome to Dressify, your one-stop shop for the latest trends and timeless classics. Discover fashion that tells your story.
-                        </p>
-                        <div className="mt-8">
-                            <Link to="#featured" className="inline-block bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-indigo-700 transition-colors duration-300">
-                                Shop Now
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="hidden md:block md:w-1/2 mt-10 md:mt-0">
-                         <img src="https://i.imgur.com/9iL1sC6.png" alt="Fashion Models" className="w-full h-auto object-contain"/>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// Newsletter Section Component
-function Newsletter() {
-    return (
-      <div className="bg-gray-100 py-16 my-12">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-800">Join Our Newsletter</h2>
-          <p className="text-gray-600 mt-2">Stay in the loop with the latest trends, new arrivals, and exclusive offers.</p>
-          <form className="mt-6 flex flex-col sm:flex-row justify-center max-w-md mx-auto">
-            <input type="email" placeholder="Enter your email" className="flex-grow p-3 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
-            <button type="submit" className="bg-indigo-600 text-white font-bold p-3 rounded-r-md mt-2 sm:mt-0 sm:rounded-l-none hover:bg-indigo-700 transition-colors">Subscribe</button>
-          </form>
+const HomePage = () => {
+  return (
+    <div className="bg-primary">
+      {/* Hero Section */}
+      <div className="relative h-screen">
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0"
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1470&q=80)' }}
+        ></div>
+        <div className="relative z-10 flex flex-col justify-center items-center h-full text-center text-white bg-black bg-opacity-50">
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-4">Discover Your Style</h1>
+          <p className="text-xl md:text-2xl text-text-primary mb-8">The best trends, the best prices.</p>
+          <Link to="/products" className="bg-accent text-primary font-bold py-3 px-8 rounded-full hover:bg-opacity-80 transition duration-300">Shop Now</Link>
         </div>
       </div>
-    );
-}
 
-// Main HomePage Component
-export default function HomePage() {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(8));
-
-        const unsubscribe = onSnapshot(q, 
-            (querySnapshot) => {
-                const productsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setProducts(productsData);
-                setLoading(false);
-            }, 
-            (err) => {
-                console.error('Error fetching products:', err);
-                setError('Failed to load products.');
-                setLoading(false);
-            }
-        );
-
-        return () => unsubscribe();
-    }, []);
-
-    return (
-        <div className="bg-white">
-            <HeroSection />
-            
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <section id="featured" className="py-12">
-                    <h2 className="text-3xl font-extrabold text-center text-gray-900">Featured Products</h2>
-                    
-                    {loading && <p className="text-center mt-8">Loading products...</p>}
-                    {error && <p className="text-center mt-8 text-red-500">{error}</p>}
-
-                    {!loading && !error && (
-                         products.length === 0 ? (
-                            <p className="text-center mt-8">No products available yet. Check back soon!</p>
-                        ) : (
-                            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-                                {products.map(product => (
-                                    <ProductCard key={product.id} product={product} />
-                                ))}
-                            </div>
-                        )
-                    )}
-                </section>
-            </main>
-            
-            <Newsletter />
+      {/* Featured Products Section */}
+      <div className="container mx-auto px-6 py-20">
+        <h2 className="text-4xl font-bold text-center text-text-primary mb-12">Featured Collection</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {/* Sample Product 1 */}
+          <div className="bg-secondary rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition duration-300">
+            <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=60" alt="Product 1" className="w-full h-80 object-cover" />
+            <div className="p-6">
+              <h3 className="text-2xl font-semibold mb-2 text-text-primary">Summer T-Shirt</h3>
+              <p className="text-text-secondary mb-4">Lightweight and stylish</p>
+              <Link to="/products/1" className="text-accent hover:underline">Explore</Link>
+            </div>
+          </div>
+          {/* Sample Product 2 */}
+          <div className="bg-secondary rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition duration-300">
+            <img src="https://images.unsplash.com/photo-1603252109360-c361993445c9?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=60" alt="Product 2" className="w-full h-80 object-cover" />
+            <div className="p-6">
+              <h3 className="text-2xl font-semibold mb-2 text-text-primary">Urban Denim</h3>
+              <p className="text-text-secondary mb-4">Perfect for any occasion</p>
+              <Link to="/products/2" className="text-accent hover:underline">Discover</Link>
+            </div>
+          </div>
+          {/* Sample Product 3 */}
+          <div className="bg-secondary rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition duration-300">
+            <img src="https://images.unsplash.com/photo-1598554743454-32d2075a332f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=60" alt="Product 3" className="w-full h-80 object-cover" />
+            <div className="p-6">
+              <h3 className="text-2xl font-semibold mb-2 text-text-primary">Streetwear Hoodie</h3>
+              <p className="text-text-secondary mb-4">Comfort and style combined</p>
+              <Link to="/products/3" className="text-accent hover:underline">View Item</Link>
+            </div>
+          </div>
         </div>
-    );
-}
+      </div>
+    </div>
+  );
+};
+
+export default HomePage;
